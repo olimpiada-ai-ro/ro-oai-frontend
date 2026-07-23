@@ -12,10 +12,12 @@ const REQUIRED_FILES = [
     '.github/workflows/boundary.yml',
     '.github/workflows/ci.yml',
     '.gitignore',
+    'LICENSE',
     'README.md',
     'scripts/validate-public-repository.mjs',
 ];
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const EXPECTED_LICENSE_SHA256 = '91a703038dd6f597c6a1a63730912ee67fd90be0c7191969dcd29ea5ae334148';
 const ALLOWED_SOURCE_DIRECTORIES = [
     'app/',
     'components/',
@@ -325,6 +327,12 @@ function isAllowedPath(file) {
 
 function contentFindings(file, content) {
     const findings = [];
+    if (
+        file === 'LICENSE' &&
+        createHash('sha256').update(content).digest('hex') !== EXPECTED_LICENSE_SHA256
+    ) {
+        return ['proprietary license terms do not match the trusted digest'];
+    }
     const extension = path.posix.extname(file).toLowerCase();
     const expectedBinaryDigest = ALLOWED_BINARY_FILES[file];
     if (expectedBinaryDigest) {

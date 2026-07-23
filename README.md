@@ -20,5 +20,8 @@ npm run build
 The application expects its service URLs and optional integrations to be supplied through
 environment variables. Optional analytics and error reporting remain disabled when unconfigured.
 
-No license is granted by this repository. A license may be added only after an explicit decision by
-the project owners.
+## License
+
+This is source-available proprietary software, not open-source software. You may inspect it and
+prepare contributions, but reuse, deployment, redistribution, and AI/ML training are prohibited
+without prior written permission. See [`LICENSE`](LICENSE) for the complete terms.

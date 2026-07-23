@@ -1,0 +1,111 @@
+ONIA PROPRIETARY SOURCE CODE TERMS
+Version 1.0 - 23 July 2026
+
+Copyright (c) 2026 the respective copyright holders of materials
+maintained by the Olimpiada Națională de Inteligență Artificială
+(ONIA) project. All rights reserved.
+
+These terms apply to all files and other content in this repository
+(the "Materials"), except third-party material and any file or directory
+that expressly states different terms.
+
+1. NO GENERAL LICENSE
+
+The Materials are publicly viewable proprietary source code. They are
+not open-source or free/libre software.
+
+Except for:
+
+(a) rights necessarily granted under GitHub's Terms of Service to
+GitHub, its affiliates, and GitHub users in connection with this public
+repository;
+
+(b) the limited contribution permission in Section 3; and
+
+(c) rights that cannot lawfully be excluded,
+
+no copyright, patent, trademark, database, or other intellectual
+property right is granted, whether expressly, by implication, estoppel,
+or otherwise.
+
+Without prior written permission from the applicable rightsholder(s),
+you must not use, execute, compile, copy, reproduce, modify, adapt,
+translate, create derivative works from, publish, distribute, transmit,
+sublicense, sell, rent, lend, host, deploy, operate, make available, or
+incorporate the Materials into any product, service, dataset, codebase,
+or other work. These restrictions apply to commercial and
+non-commercial use.
+
+2. AI, MACHINE LEARNING, AND TEXT-AND-DATA MINING
+
+For the avoidance of doubt, and to the extent that applicable law
+requires an express reservation, all rights are expressly reserved for
+text-and-data mining and similar automated analysis.
+
+No permission is granted to reproduce, extract, scrape, ingest, or use
+the Materials, or any representation derived from them, for developing,
+training, fine-tuning, evaluating, benchmarking, validating, or
+improving any artificial-intelligence, machine-learning, statistical,
+or generative system, or for creating datasets, embeddings, model
+weights, or similar artifacts. This applies to commercial and
+non-commercial activities.
+
+This Section does not limit rights granted directly under GitHub's Terms
+of Service or rights that cannot lawfully be excluded.
+
+3. LIMITED PERMISSION TO CONTRIBUTE
+
+You may reproduce, modify, execute, and test the Materials solely as
+reasonably necessary to prepare, submit, and permit evaluation of a
+bona fide pull request to the upstream ONIA repository. This permission
+does not allow use of the Materials or resulting modifications in any
+other project, product, service, research activity, course, competition,
+or deployment.
+
+By submitting a contribution, you:
+
+(a) represent that you have the right to submit and license it;
+
+(b) grant the applicable copyright holders and the natural persons or
+legal entities authorized to maintain the upstream repository for ONIA
+a perpetual, irrevocable, worldwide, non-exclusive, royalty-free,
+fully-paid, transferable, and sublicensable license under all copyright
+and patent rights you control to use, reproduce, modify, create
+derivative works from, distribute, publicly perform or display,
+sublicense, relicense, commercialize, and otherwise exploit the
+contribution for any purpose; and
+
+(c) to the extent permitted by law, consent to modification of the
+contribution and waive, or agree not to assert, moral rights in it.
+
+No compensation is owed for a contribution.
+
+4. THIRD-PARTY MATERIALS
+
+Third-party components and materials remain governed by their own
+licenses and notices. These terms neither replace those terms nor grant
+additional rights in third-party material. No trademark license is
+granted.
+
+5. TERMINATION
+
+Any permission granted to you under these terms terminates
+automatically upon breach. The contributor grant in Section 3 and
+Sections 4, 6, and 7 survive termination.
+
+6. DISCLAIMER AND LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE MATERIALS ARE PROVIDED
+"AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE RIGHTSHOLDERS AND
+MAINTAINERS WILL NOT BE LIABLE FOR ANY CLAIM, LOSS, OR DAMAGES ARISING
+FROM OR RELATING TO THE MATERIALS OR THEIR USE, WHETHER IN CONTRACT,
+TORT, OR OTHERWISE.
+
+7. PERMISSION REQUESTS
+
+Requests for a separate written license may be sent to
+contact@olimpiada-ai.ro.

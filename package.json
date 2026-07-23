@@ -2,6 +2,7 @@
     "name": "ro-oai-frontend",
     "version": "0.1.0",
     "private": true,
+    "license": "UNLICENSED",
     "browserslist": [
         "chrome >= 111",
         "edge >= 111",
