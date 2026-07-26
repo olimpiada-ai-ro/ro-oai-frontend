@@ -990,7 +990,8 @@
         "title": "מדינות",
         "selectCountry": "בחר מדינה",
         "defaultCountry": "רומניה",
-        "country": "מדינה"
+        "country": "מדינה",
+        "allCountries": "כל המדינות"
     },
     "rankings": {
         "institutionTitle": "דירוגי מוסדות",

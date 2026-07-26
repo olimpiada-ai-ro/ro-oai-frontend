@@ -654,7 +654,10 @@ export async function getInstitutions(
     filters?: {
         type?: import('./types').InstitutionType;
         countyId?: number;
+        countryCode?: string;
         search?: string;
+        sort?: 'name' | 'country' | 'county' | 'memberCount' | 'type';
+        direction?: 'asc' | 'desc';
     },
     page: number = 0,
     size: number = 20,
@@ -671,8 +674,17 @@ export async function getInstitutions(
         if (filters?.countyId) {
             params.append('countyId', filters.countyId.toString());
         }
+        if (filters?.countryCode) {
+            params.append('countryCode', filters.countryCode);
+        }
         if (filters?.search) {
             params.append('search', filters.search);
+        }
+        if (filters?.sort) {
+            params.append('sort', filters.sort);
+        }
+        if (filters?.direction) {
+            params.append('direction', filters.direction);
         }
 
         const response = await fetchApi(
@@ -995,6 +1007,11 @@ export async function getInstitutionRankings(
                     name: ranking.countyName,
                     code: ranking.countyCode,
                 },
+                country: {
+                    code: ranking.countryCode,
+                    name: ranking.countryName,
+                    flagEmoji: ranking.countryFlagEmoji,
+                },
                 memberCount: ranking.memberCount,
                 createdAt: new Date(),
             },
@@ -1066,6 +1083,133 @@ export async function getCountries(): Promise<import('./types').Country[]> {
 
         const data = await response.json();
         return data || [];
+    } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error(
+                'Network error: Unable to connect to the server. Please check your connection.',
+            );
+        }
+        throw error;
+    }
+}
+
+/**
+ * Get enabled countries with institution and member statistics.
+ */
+export async function getCountryOverviews(): Promise<import('./types').CountryOverview[]> {
+    try {
+        const response = await fetchApi(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/countries/overview`,
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch country overviews: ${response.status} ${response.statusText}`,
+            );
+        }
+
+        return (await response.json()) || [];
+    } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error(
+                'Network error: Unable to connect to the server. Please check your connection.',
+            );
+        }
+        throw error;
+    }
+}
+
+/**
+ * Get one enabled country with institution and member statistics.
+ */
+export async function getCountryOverview(
+    countryCode: string,
+): Promise<import('./types').CountryOverview> {
+    try {
+        const response = await fetchApi(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/countries/${encodeURIComponent(countryCode)}/overview`,
+        );
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Country not found');
+            }
+            throw new Error(
+                `Failed to fetch country overview: ${response.status} ${response.statusText}`,
+            );
+        }
+
+        return await response.json();
+    } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error(
+                'Network error: Unable to connect to the server. Please check your connection.',
+            );
+        }
+        throw error;
+    }
+}
+
+/**
+ * Get the county breakdown for a country. Romania currently provides the only
+ * county-level directory; other countries return an empty list.
+ */
+export async function getCountryCounties(
+    countryCode: string,
+    includeStats: boolean = false,
+): Promise<import('./types').CountyResponse[]> {
+    try {
+        const params = new URLSearchParams();
+        if (includeStats) {
+            params.set('includeStatistics', 'true');
+        }
+
+        const response = await fetchApi(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/countries/${encodeURIComponent(countryCode)}/counties${params.size ? `?${params.toString()}` : ''}`,
+        );
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Country not found');
+            }
+            throw new Error(
+                `Failed to fetch country counties: ${response.status} ${response.statusText}`,
+            );
+        }
+
+        return (await response.json()) || [];
+    } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+            throw new Error(
+                'Network error: Unable to connect to the server. Please check your connection.',
+            );
+        }
+        throw error;
+    }
+}
+
+/**
+ * Get one county from a country's public hierarchy.
+ */
+export async function getCountryCountyById(
+    countryCode: string,
+    countyId: number,
+): Promise<import('./types').CountyResponse> {
+    try {
+        const response = await fetchApi(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/countries/${encodeURIComponent(countryCode)}/counties/${countyId}`,
+        );
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('County not found');
+            }
+            throw new Error(
+                `Failed to fetch country county: ${response.status} ${response.statusText}`,
+            );
+        }
+
+        return await response.json();
     } catch (error) {
         if (error instanceof TypeError && error.message.includes('fetch')) {
             throw new Error(

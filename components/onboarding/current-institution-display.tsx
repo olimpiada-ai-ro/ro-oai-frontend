@@ -1,11 +1,12 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, CheckCircle2, MapPin, ArrowRight } from 'lucide-react';
 import { Institution } from '@/lib/types';
+import { getInstitutionLocationLabel } from '@/lib/country-display';
 
 interface CurrentInstitutionDisplayProps {
     institution: Institution;
@@ -17,6 +18,8 @@ export function CurrentInstitutionDisplay({
     onChangeInstitution,
 }: CurrentInstitutionDisplayProps) {
     const t = useTranslations('onboarding.institutionSelection');
+    const locale = useLocale();
+    const locationLabel = getInstitutionLocationLabel(institution, locale);
 
     // Map institution type to display text
     const getInstitutionTypeLabel = (type: string) => {
@@ -83,12 +86,12 @@ export function CurrentInstitutionDisplay({
                                         >
                                             {getInstitutionTypeLabel(institution.type)}
                                         </Badge>
-                                        {institution.county && (
+                                        {locationLabel ? (
                                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                 <MapPin className="h-3 w-3" aria-hidden="true" />
-                                                <span>{institution.county.name}</span>
+                                                <span>{locationLabel}</span>
                                             </div>
-                                        )}
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>

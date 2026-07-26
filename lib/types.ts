@@ -524,6 +524,20 @@ export type Country = {
     flagEmoji: string;
 };
 
+export type CountryStatistics = {
+    totalUsers: number;
+    totalInstitutions: number;
+    usersByType: Record<InstitutionType, number>;
+    institutionsByType: Record<InstitutionType, number>;
+    topInstitutions: Institution[];
+};
+
+export type CountryOverview = {
+    country: Country;
+    statistics: CountryStatistics;
+    hasCountyBreakdown: boolean;
+};
+
 export type CountryRanking = {
     rank: number;
     countryCode: string;

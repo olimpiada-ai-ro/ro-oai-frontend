@@ -1118,7 +1118,8 @@
         "title": "Țări",
         "selectCountry": "Selectează Țara",
         "defaultCountry": "România",
-        "country": "Țară"
+        "country": "Țară",
+        "allCountries": "Toate țările"
     },
     "rankings": {
         "institutionTitle": "Clasament Instituții",

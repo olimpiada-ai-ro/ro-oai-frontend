@@ -23,11 +23,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/routing';
-import { getCountyById } from '@/lib/api';
+import { getCountryCountyById } from '@/lib/api';
 import type { CountyResponse, InstitutionType } from '@/lib/types';
 
 interface CountyDetailViewProps {
     countyId: number | null;
+    countryCode?: string;
 }
 
 type LoadState = 'loading' | 'ready' | 'not-found' | 'error';
@@ -36,7 +37,7 @@ function isNotFoundError(error: unknown) {
     return error instanceof Error && /not found/i.test(error.message);
 }
 
-export function CountyDetailView({ countyId }: CountyDetailViewProps) {
+export function CountyDetailView({ countyId, countryCode = 'RO' }: CountyDetailViewProps) {
     const t = useTranslations();
     const locale = useLocale();
     const [county, setCounty] = useState<CountyResponse | null>(null);
@@ -44,6 +45,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
         countyId === null ? 'not-found' : 'loading',
     );
     const [loadError, setLoadError] = useState<string | null>(null);
+    const countryHref = `/countries/${countryCode.toUpperCase()}`;
 
     const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
     const decimalFormatter = useMemo(
@@ -62,7 +64,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
         setLoadError(null);
 
         try {
-            const data = await getCountyById(countyId);
+            const data = await getCountryCountyById(countryCode, countyId);
             setCounty(data);
             setLoadState('ready');
         } catch (error) {
@@ -77,7 +79,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
             setLoadError(error instanceof Error ? error.message : t('counties.loadError'));
             setLoadState('error');
         }
-    }, [countyId, t]);
+    }, [countryCode, countyId, t]);
 
     useEffect(() => {
         void loadCounty();
@@ -111,7 +113,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                     title={t('counties.notFound')}
                     action={
                         <Button asChild className="min-h-11 rounded-none px-5">
-                            <Link href="/counties">
+                            <Link href={countryHref}>
                                 <ArrowLeft className="me-2 h-4 w-4 rtl:rotate-180" />
                                 {t('counties.backToList')}
                             </Link>
@@ -151,7 +153,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                                 variant="outline"
                                 className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] px-5"
                             >
-                                <Link href="/counties">{t('counties.backToList')}</Link>
+                                <Link href={countryHref}>{t('counties.backToList')}</Link>
                             </Button>
                         </div>
                     }
@@ -167,7 +169,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
     return (
         <>
             <nav
-                aria-label={t('counties.title')}
+                aria-label={t('countries.title')}
                 className="mb-7 flex min-h-11 items-center gap-2 overflow-x-auto text-sm text-[var(--platform-ink-muted)]"
             >
                 <Link
@@ -179,10 +181,17 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                 </Link>
                 <ChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
                 <Link
-                    href="/counties"
+                    href="/countries"
                     className="inline-flex min-h-11 shrink-0 items-center px-2 font-semibold hover:text-[var(--platform-violet)] hover:underline"
                 >
-                    {t('counties.title')}
+                    {t('countries.title')}
+                </Link>
+                <ChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
+                <Link
+                    href={countryHref}
+                    className="inline-flex min-h-11 shrink-0 items-center px-2 font-semibold hover:text-[var(--platform-violet)] hover:underline"
+                >
+                    {t('countries.defaultCountry')}
                 </Link>
                 <ChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
                 <span
@@ -194,7 +203,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
             </nav>
 
             <PlatformPageHeader
-                eyebrow={`${t('counties.title')} · ${county.code}`}
+                eyebrow={`${t('countries.defaultCountry')} · ${county.code}`}
                 icon={MapPinned}
                 title={<span dir="auto">{county.name}</span>}
                 description={t('counties.detailDescription')}
@@ -208,7 +217,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                     description={t('counties.detailDescription')}
                     action={
                         <Button asChild className="min-h-11 rounded-none px-5">
-                            <Link href={`/institutions?countyId=${county.id}`}>
+                            <Link href={`/institutions?countryCode=RO&countyId=${county.id}`}>
                                 {t('counties.viewAllInstitutions')}
                                 <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
                             </Link>
@@ -340,7 +349,9 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                                         variant="outline"
                                         className="hidden min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] px-4 sm:inline-flex"
                                     >
-                                        <Link href={`/institutions?countyId=${county.id}`}>
+                                        <Link
+                                            href={`/institutions?countryCode=RO&countyId=${county.id}`}
+                                        >
                                             {t('counties.viewAllInstitutions')}
                                             <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
                                         </Link>
@@ -397,7 +408,7 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                                 asChild
                                 className="mt-5 min-h-11 w-full rounded-none px-5 sm:hidden"
                             >
-                                <Link href={`/institutions?countyId=${county.id}`}>
+                                <Link href={`/institutions?countryCode=RO&countyId=${county.id}`}>
                                     {t('counties.viewAllInstitutions')}
                                     <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
                                 </Link>
@@ -411,7 +422,9 @@ export function CountyDetailView({ countyId }: CountyDetailViewProps) {
                             description={t('counties.noResultsDescription')}
                             action={
                                 <Button asChild className="min-h-11 rounded-none px-5">
-                                    <Link href={`/institutions?countyId=${county.id}`}>
+                                    <Link
+                                        href={`/institutions?countryCode=RO&countyId=${county.id}`}
+                                    >
                                         {t('counties.viewAllInstitutions')}
                                     </Link>
                                 </Button>

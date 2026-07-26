@@ -990,7 +990,8 @@
         "title": "الدول",
         "selectCountry": "اختر الدولة",
         "defaultCountry": "رومانيا",
-        "country": "الدولة"
+        "country": "الدولة",
+        "allCountries": "جميع الدول"
     },
     "rankings": {
         "institutionTitle": "تصنيفات المؤسسات",

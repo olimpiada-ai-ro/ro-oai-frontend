@@ -38,7 +38,7 @@ describe('header navigation routing', () => {
         expect(groups.directory).toEqual([
             '/roadmap',
             '/institutions',
-            '/counties',
+            '/countries',
             '/achievements',
         ]);
         expect(groups.directory).not.toContain('/leaderboard');

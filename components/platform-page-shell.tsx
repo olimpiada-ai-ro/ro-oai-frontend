@@ -66,6 +66,7 @@ export function PlatformPageHeader({
 
 type PlatformSectionHeadingProps = {
     title: ReactNode;
+    titleId?: string;
     description?: ReactNode;
     eyebrow?: ReactNode;
     action?: ReactNode;
@@ -74,6 +75,7 @@ type PlatformSectionHeadingProps = {
 
 export function PlatformSectionHeading({
     title,
+    titleId,
     description,
     eyebrow,
     action,
@@ -83,7 +85,9 @@ export function PlatformSectionHeading({
         <div className={cn('platform-section-heading', className)}>
             <div className="min-w-0">
                 {eyebrow && <p className="platform-section-eyebrow">{eyebrow}</p>}
-                <h2 className="platform-section-title">{title}</h2>
+                <h2 id={titleId} className="platform-section-title">
+                    {title}
+                </h2>
                 {description && <p className="platform-section-description">{description}</p>}
             </div>
             {action && <div className="shrink-0">{action}</div>}

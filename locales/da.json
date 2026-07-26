@@ -990,7 +990,8 @@
         "title": "Lande",
         "selectCountry": "Vælg land",
         "defaultCountry": "Rumænien",
-        "country": "Land"
+        "country": "Land",
+        "allCountries": "Alle lande"
     },
     "rankings": {
         "institutionTitle": "Institutionsrangliste",

@@ -990,7 +990,8 @@
         "title": "Riigid",
         "selectCountry": "Vali riik",
         "defaultCountry": "Rumeenia",
-        "country": "Riik"
+        "country": "Riik",
+        "allCountries": "Kõik riigid"
     },
     "rankings": {
         "institutionTitle": "Asutuste edetabel",

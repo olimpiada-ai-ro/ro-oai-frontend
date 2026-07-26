@@ -42,6 +42,7 @@ import { UserAvatar } from '@/components/user-avatar';
 import { Link } from '@/i18n/routing';
 import { analytics, AnalyticsEvents } from '@/lib/analytics';
 import { updateShowcase } from '@/lib/api';
+import { getInstitutionLocationLabel } from '@/lib/country-display';
 import { formatLongDate, formatShortDate } from '@/lib/i18n-formatting';
 import type { UserLevel } from '@/lib/level/types';
 import { TIER_CONFIG } from '@/lib/level/tier-config';
@@ -530,6 +531,7 @@ type ProfileRegisterProps = {
 
 function ProfileRegister({ profile, isOwnProfile, fullName, formatDate }: ProfileRegisterProps) {
     const t = useTranslations('profile');
+    const locale = useLocale() as Locale;
 
     return (
         <aside className="platform-panel bg-[var(--platform-paper)] xl:sticky xl:top-24">
@@ -648,7 +650,9 @@ function ProfileRegister({ profile, isOwnProfile, fullName, formatDate }: Profil
                         </Link>
                         <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--platform-ink-muted)]">
                             <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                            <span dir="auto">{profile.institution.county.name}</span>
+                            <span dir="auto">
+                                {getInstitutionLocationLabel(profile.institution, locale)}
+                            </span>
                         </p>
                         {profile.institutionJoinedAt ? (
                             <p className="mt-2 text-xs leading-5 text-[var(--platform-ink-muted)]">

@@ -990,7 +990,8 @@
         "title": "Land",
         "selectCountry": "Velg land",
         "defaultCountry": "Romania",
-        "country": "Land"
+        "country": "Land",
+        "allCountries": "Alle land"
     },
     "rankings": {
         "institutionTitle": "Institusjonsrangeringer",

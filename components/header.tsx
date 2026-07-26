@@ -10,9 +10,9 @@ import {
     ChevronDown,
     ChevronRight,
     Crown,
+    Globe2,
     LayoutGrid,
     ListChecks,
-    MapPinned,
     Medal,
     Menu,
     Newspaper,
@@ -300,10 +300,10 @@ export function Header() {
                 label: t('navigation.institutions'),
                 icon: Building2,
             },
-            '/counties': {
-                href: '/counties',
-                label: t('navigation.counties'),
-                icon: MapPinned,
+            '/countries': {
+                href: '/countries',
+                label: t('countries.title'),
+                icon: Globe2,
             },
             '/achievements': {
                 href: '/achievements',

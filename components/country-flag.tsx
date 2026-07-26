@@ -7,6 +7,8 @@ export interface CountryFlagProps {
     countryName?: string;
     size?: 'sm' | 'md' | 'lg';
     showName?: boolean;
+    /** Hide the flag from assistive technology when adjacent text already names the country. */
+    decorative?: boolean;
     className?: string;
 }
 
@@ -40,6 +42,7 @@ export function CountryFlag({
     countryName,
     size = 'md',
     showName = false,
+    decorative = false,
     className,
 }: CountryFlagProps) {
     // Handle invalid or missing country codes
@@ -62,8 +65,9 @@ export function CountryFlag({
     return (
         <span
             className={cn('inline-flex items-center gap-1.5', className)}
-            role="img"
-            aria-label={ariaLabel}
+            role={decorative ? undefined : 'img'}
+            aria-label={decorative ? undefined : ariaLabel}
+            aria-hidden={decorative || undefined}
         >
             <span className={cn('inline-block leading-none', sizeClasses[size])} aria-hidden="true">
                 {flagEmoji}

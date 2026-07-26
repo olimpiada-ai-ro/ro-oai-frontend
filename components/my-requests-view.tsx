@@ -30,6 +30,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cancelMembershipRequest, getMyMembershipRequests } from '@/lib/api';
+import { getInstitutionLocationLabel } from '@/lib/country-display';
 import type { InstitutionType, MembershipRequest, RequestStatus } from '@/lib/types';
 import { useLocale } from '@/hooks/use-locale';
 import { useRouter } from '@/i18n/routing';
@@ -240,7 +241,10 @@ export function MyRequestsView() {
                                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--platform-ink-muted)]">
                                             <span className="inline-flex items-center gap-1.5">
                                                 <MapPin className="h-4 w-4" aria-hidden="true" />
-                                                {request.institution.county.name}
+                                                {getInstitutionLocationLabel(
+                                                    request.institution,
+                                                    locale,
+                                                )}
                                             </span>
                                             <span>
                                                 {getInstitutionTypeLabel(request.institution.type)}

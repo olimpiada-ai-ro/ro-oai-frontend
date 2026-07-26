@@ -105,7 +105,7 @@ export function CountyRankingsView() {
                     {rankings.map((ranking) => (
                         <li key={ranking.county.id}>
                             <Link
-                                href={`/counties/${ranking.county.id}`}
+                                href={`/countries/RO/counties/${ranking.county.id}`}
                                 aria-label={t('accessibility.viewDetailsFor', {
                                     title: ranking.county.name,
                                 })}

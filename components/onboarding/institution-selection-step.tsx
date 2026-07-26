@@ -213,6 +213,7 @@ export function InstitutionSelectionStep({
                                 </div>
                                 <InstitutionSearchSelect
                                     onInstitutionSelected={handleInstitutionSelected}
+                                    initialCountryCode={currentInstitution.country?.code}
                                 />
                             </div>
                         )}

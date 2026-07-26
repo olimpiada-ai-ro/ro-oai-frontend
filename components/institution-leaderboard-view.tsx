@@ -8,6 +8,7 @@ import { CountryFlag } from '@/components/country-flag';
 import { PlatformEmptyState, PlatformSectionHeading } from '@/components/platform-page-shell';
 import { useGTMTracker } from '@/hooks/use-gtm-tracker';
 import { Link } from '@/i18n/routing';
+import { getInstitutionLocationLabel } from '@/lib/country-display';
 import type { InstitutionRanking, InstitutionType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -183,11 +184,15 @@ export function InstitutionLeaderboardView({
                                                     countryName={entry.institution.country.name}
                                                     size="sm"
                                                     showName={false}
+                                                    decorative
                                                 />
                                             ) : null}
                                             <span className="inline-flex items-center gap-1">
                                                 <MapPin className="h-3 w-3" aria-hidden="true" />
-                                                {entry.institution.county.name}
+                                                {getInstitutionLocationLabel(
+                                                    entry.institution,
+                                                    locale,
+                                                )}
                                             </span>
                                         </div>
                                     </div>
@@ -294,6 +299,7 @@ export function InstitutionLeaderboardView({
                                                         size="sm"
                                                         showName={false}
                                                         className="mt-3.5 shrink-0"
+                                                        decorative
                                                     />
                                                 ) : null}
                                                 <div className="min-w-0">
@@ -313,7 +319,12 @@ export function InstitutionLeaderboardView({
                                                         </span>
                                                     </Link>
                                                     <div className="flex flex-wrap gap-x-2 text-xs text-[var(--platform-ink-muted)] sm:hidden">
-                                                        <span>{entry.institution.county.name}</span>
+                                                        <span>
+                                                            {getInstitutionLocationLabel(
+                                                                entry.institution,
+                                                                locale,
+                                                            )}
+                                                        </span>
                                                         <span>
                                                             {getInstitutionTypeLabel(
                                                                 entry.institution.type,
@@ -329,7 +340,10 @@ export function InstitutionLeaderboardView({
                                                     className="h-3.5 w-3.5"
                                                     aria-hidden="true"
                                                 />
-                                                {entry.institution.county.name}
+                                                {getInstitutionLocationLabel(
+                                                    entry.institution,
+                                                    locale,
+                                                )}
                                             </span>
                                         </td>
                                         <td className="hidden px-4 py-2.5 sm:table-cell">

@@ -990,7 +990,8 @@
         "title": "Krajiny",
         "selectCountry": "Vybrať krajinu",
         "defaultCountry": "Rumunsko",
-        "country": "Krajina"
+        "country": "Krajina",
+        "allCountries": "Všetky krajiny"
     },
     "rankings": {
         "institutionTitle": "Hodnotenie inštitúcií",

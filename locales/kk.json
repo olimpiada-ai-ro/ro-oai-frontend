@@ -990,7 +990,8 @@
         "title": "Елдер",
         "selectCountry": "Елді таңдау",
         "defaultCountry": "Румыния",
-        "country": "Ел"
+        "country": "Ел",
+        "allCountries": "Барлық елдер"
     },
     "rankings": {
         "institutionTitle": "Мекемелер рейтингі",

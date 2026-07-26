@@ -990,7 +990,8 @@
         "title": "Země",
         "selectCountry": "Vybrat zemi",
         "defaultCountry": "Rumunsko",
-        "country": "Země"
+        "country": "Země",
+        "allCountries": "Všechny země"
     },
     "rankings": {
         "institutionTitle": "Hodnocení institucí",

@@ -990,7 +990,8 @@
         "title": "Države",
         "selectCountry": "Odaberi državu",
         "defaultCountry": "Rumunjska",
-        "country": "Država"
+        "country": "Država",
+        "allCountries": "Sve države"
     },
     "rankings": {
         "institutionTitle": "Rangiranje institucija",

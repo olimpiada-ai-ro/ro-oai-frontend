@@ -9,7 +9,7 @@ export type HeaderNavigationHref =
     | '/articles'
     | '/roadmap'
     | '/institutions'
-    | '/counties'
+    | '/countries'
     | '/achievements';
 
 export type HeaderNavigationGroups = {
@@ -28,7 +28,7 @@ export function getHeaderNavigationGroups(
     const directory: HeaderNavigationHref[] = [
         '/roadmap',
         '/institutions',
-        '/counties',
+        '/countries',
         '/achievements',
     ];
 

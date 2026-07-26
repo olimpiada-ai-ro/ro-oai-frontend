@@ -990,7 +990,8 @@
         "title": "Országok",
         "selectCountry": "Ország kiválasztása",
         "defaultCountry": "Románia",
-        "country": "Ország"
+        "country": "Ország",
+        "allCountries": "Minden ország"
     },
     "rankings": {
         "institutionTitle": "Intézményi rangsor",

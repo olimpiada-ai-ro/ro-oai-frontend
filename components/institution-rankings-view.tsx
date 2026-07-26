@@ -14,6 +14,7 @@ import {
 
 import { PlatformEmptyState, PlatformSectionHeading } from '@/components/platform-page-shell';
 import { Button } from '@/components/ui/button';
+import { CountryFlag } from '@/components/country-flag';
 import {
     Select,
     SelectContent,
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/routing';
+import { getInstitutionLocationLabel } from '@/lib/country-display';
 import { getCounties, getInstitutionRankings } from '@/lib/api';
 import type { County, InstitutionRanking, InstitutionType } from '@/lib/types';
 
@@ -214,11 +216,27 @@ export function InstitutionRankingsView() {
                                         </span>
                                         <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold uppercase tracking-[0.06em] text-[var(--platform-ink-muted)]">
                                             <span className="inline-flex items-center gap-1.5">
-                                                <MapPin
-                                                    className="h-3.5 w-3.5"
-                                                    aria-hidden="true"
-                                                />
-                                                {ranking.institution.county.name}
+                                                {ranking.institution.country ? (
+                                                    <CountryFlag
+                                                        countryCode={
+                                                            ranking.institution.country.code
+                                                        }
+                                                        countryName={
+                                                            ranking.institution.country.name
+                                                        }
+                                                        size="sm"
+                                                        decorative
+                                                    />
+                                                ) : (
+                                                    <MapPin
+                                                        className="h-3.5 w-3.5"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                {getInstitutionLocationLabel(
+                                                    ranking.institution,
+                                                    locale,
+                                                )}
                                             </span>
                                             <span>
                                                 {getInstitutionTypeLabel(ranking.institution.type)}

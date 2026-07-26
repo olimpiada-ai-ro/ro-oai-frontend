@@ -1165,7 +1165,8 @@
         "title": "Countries",
         "selectCountry": "Select Country",
         "defaultCountry": "Romania",
-        "country": "Country"
+        "country": "Country",
+        "allCountries": "All countries"
     },
     "rankings": {
         "institutionTitle": "Institution Rankings",

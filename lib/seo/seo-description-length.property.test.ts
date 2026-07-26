@@ -112,6 +112,7 @@ import {
     generatePrivacyMetadata,
     generateTermsMetadata,
     generateInstitutionsMetadata,
+    generateCountriesMetadata,
     generateCountiesMetadata,
     generateInstitutionRankingsMetadata,
     generateCountyRankingsMetadata,
@@ -312,6 +313,23 @@ describe('SEO Description Length Property Tests', () => {
             await fc.assert(
                 fc.asyncProperty(arbitraryLocale(), async (locale) => {
                     const metadata = await generateCountiesMetadata(locale);
+
+                    expect(metadata.description).toBeDefined();
+                    expect(metadata.description.length).toBeGreaterThanOrEqual(
+                        SEO_LIMITS.description.min,
+                    );
+                    expect(metadata.description.length).toBeLessThanOrEqual(
+                        SEO_LIMITS.description.max,
+                    );
+                }),
+                { numRuns: 10 },
+            );
+        });
+
+        it('should generate countries page description within SEO limits (120-160 characters)', async () => {
+            await fc.assert(
+                fc.asyncProperty(arbitraryLocale(), async (locale) => {
+                    const metadata = await generateCountriesMetadata(locale);
 
                     expect(metadata.description).toBeDefined();
                     expect(metadata.description.length).toBeGreaterThanOrEqual(

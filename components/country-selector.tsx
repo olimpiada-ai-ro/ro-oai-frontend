@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CountryFlag } from '@/components/country-flag';
+import { getCountryDisplayName } from '@/lib/country-display';
 import type { Country } from '@/lib/types';
 
 export interface CountrySelectorProps {
@@ -37,6 +38,8 @@ export interface CountrySelectorProps {
     showClear?: boolean;
     /** Additional CSS classes */
     className?: string;
+    /** Additional CSS classes for the combobox trigger */
+    triggerClassName?: string;
     /** Loading state */
     loading?: boolean;
     /** Search placeholder text */
@@ -85,6 +88,7 @@ export function CountrySelector({
     error,
     showClear = true,
     className,
+    triggerClassName,
     loading = false,
     searchPlaceholder = 'Search countries...',
     emptyText = 'No country found',
@@ -110,7 +114,7 @@ export function CountrySelector({
 
         const query = searchQuery.toLowerCase();
         return countries.filter((country) => {
-            const name = locale === 'ro' && country.nameRo ? country.nameRo : country.name;
+            const name = getCountryDisplayName(country, locale);
             return name.toLowerCase().includes(query) || country.code.toLowerCase().includes(query);
         });
     }, [countries, searchQuery, locale]);
@@ -130,7 +134,7 @@ export function CountrySelector({
 
     // Get display name for a country
     const getCountryName = (country: Country) => {
-        return locale === 'ro' && country.nameRo ? country.nameRo : country.name;
+        return getCountryDisplayName(country, locale);
     };
 
     // Determine if clear button should be shown
@@ -156,6 +160,7 @@ export function CountrySelector({
                                 showClearButton && 'pe-20',
                                 !value && 'text-muted-foreground',
                                 error && 'border-destructive focus-visible:ring-destructive',
+                                triggerClassName,
                             )}
                         >
                             <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -170,6 +175,7 @@ export function CountrySelector({
                                             countryCode={selectedCountry.code}
                                             countryName={getCountryName(selectedCountry)}
                                             size="sm"
+                                            decorative
                                         />
                                         <span className="truncate">
                                             {getCountryName(selectedCountry)}
@@ -222,6 +228,7 @@ export function CountrySelector({
                                                 countryCode={country.code}
                                                 countryName={countryName}
                                                 size="sm"
+                                                decorative
                                             />
                                             <span className="flex-1 truncate">{countryName}</span>
                                             <Check

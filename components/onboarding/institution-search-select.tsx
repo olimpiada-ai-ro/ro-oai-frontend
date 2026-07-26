@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
     AlertCircle,
     Building2,
@@ -23,20 +23,29 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { getInstitutions, getCounties, createMembershipRequest } from '@/lib/api';
-import type { Institution, InstitutionType, County } from '@/lib/types';
+import { CountryFlag } from '@/components/country-flag';
+import { CountrySelector } from '@/components/country-selector';
+import { getInstitutions, getCounties, getCountries, createMembershipRequest } from '@/lib/api';
+import type { Institution, InstitutionType, County, Country } from '@/lib/types';
+import { getCountryDisplayName, getInstitutionLocationLabel } from '@/lib/country-display';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
 
 interface InstitutionSearchSelectProps {
     onInstitutionSelected: (approved: boolean) => void;
+    initialCountryCode?: string;
 }
 
-export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSearchSelectProps) {
+export function InstitutionSearchSelect({
+    onInstitutionSelected,
+    initialCountryCode,
+}: InstitutionSearchSelectProps) {
     const t = useTranslations();
+    const locale = useLocale();
     const { toast } = useToast();
 
     const [institutions, setInstitutions] = useState<Institution[]>([]);
+    const [countries, setCountries] = useState<Country[]>([]);
     const [counties, setCounties] = useState<County[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -48,19 +57,38 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<InstitutionType | 'ALL'>('ALL');
     const [selectedCounty, setSelectedCounty] = useState<number | 'ALL'>('ALL');
+    const [selectedCountry, setSelectedCountry] = useState<string | 'ALL'>(
+        initialCountryCode?.trim().toUpperCase() || 'ALL',
+    );
 
     const debouncedSearch = useDebounce(searchQuery, 300);
 
+    const loadCountries = useCallback(async () => {
+        setCountiesError(null);
+        try {
+            setCountries(await getCountries());
+        } catch {
+            setCountries([]);
+            setCountiesError(t('settings.errorLoadingCountries'));
+        }
+    }, [t]);
+
     const loadCounties = useCallback(async () => {
+        if (selectedCountry !== 'RO') {
+            setCounties([]);
+            setSelectedCounty('ALL');
+            return;
+        }
+
         setCountiesError(null);
         try {
             const data = await getCounties();
-            setCounties(data);
+            setCounties(data.filter((county) => county.code !== 'XX'));
         } catch {
             setCounties([]);
             setCountiesError(t('settings.errorLoadingCountries'));
         }
-    }, [t]);
+    }, [selectedCountry, t]);
 
     const loadInstitutions = useCallback(async () => {
         setLoading(true);
@@ -69,10 +97,14 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
             const filters: {
                 type?: InstitutionType;
                 countyId?: number;
+                countryCode?: string;
                 search?: string;
             } = {};
             if (selectedType !== 'ALL') filters.type = selectedType;
-            if (selectedCounty !== 'ALL') filters.countyId = selectedCounty;
+            if (selectedCountry !== 'ALL') filters.countryCode = selectedCountry;
+            if (selectedCountry === 'RO' && selectedCounty !== 'ALL') {
+                filters.countyId = selectedCounty;
+            }
             if (debouncedSearch) filters.search = debouncedSearch;
 
             const data = await getInstitutions(filters, 0, 3); // Load first 3 results
@@ -83,7 +115,11 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, selectedCounty, selectedType, t]);
+    }, [debouncedSearch, selectedCountry, selectedCounty, selectedType, t]);
+
+    useEffect(() => {
+        void loadCountries();
+    }, [loadCountries]);
 
     useEffect(() => {
         void loadCounties();
@@ -154,44 +190,109 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
         <div className="flex min-h-0 flex-col">
             {/* Filters - Fixed at top */}
             <div className="flex-shrink-0 space-y-3 mb-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <Select
-                        value={selectedType}
-                        onValueChange={(value) => setSelectedType(value as InstitutionType | 'ALL')}
-                    >
-                        <SelectTrigger className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] text-[var(--platform-ink)]">
-                            <SelectValue placeholder={t('institutions.filterByType')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">{t('institutions.allTypes')}</SelectItem>
-                            <SelectItem value="GIMNAZIU">
-                                {t('institutions.types.gimnaziu')}
-                            </SelectItem>
-                            <SelectItem value="LICEU">{t('institutions.types.liceu')}</SelectItem>
-                            <SelectItem value="FACULTATE">
-                                {t('institutions.types.facultate')}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div
+                    className={`grid gap-3 sm:grid-cols-2 ${
+                        selectedCountry === 'RO' ? 'lg:grid-cols-3' : ''
+                    }`}
+                >
+                    <div className="space-y-1.5">
+                        <label
+                            htmlFor="onboarding-institution-country"
+                            className="block text-xs font-semibold text-[var(--platform-ink-muted-strong)]"
+                        >
+                            {t('countries.country')}
+                        </label>
+                        <CountrySelector
+                            id="onboarding-institution-country"
+                            value={selectedCountry === 'ALL' ? null : selectedCountry}
+                            onChange={(countryCode) => {
+                                setSelectedCountry(countryCode || 'ALL');
+                                setSelectedCounty('ALL');
+                                setSelectedInstitutionId(null);
+                            }}
+                            countries={countries}
+                            placeholder={t('countries.allCountries')}
+                            searchPlaceholder={t('settings.searchCountries')}
+                            emptyText={t('settings.noCountryFound')}
+                            loadingText={t('common.loading')}
+                            clearLabel={t('settings.clearCountry')}
+                            locale={locale}
+                            showClear
+                            triggerClassName="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] text-[var(--platform-ink)]"
+                        />
+                    </div>
 
-                    <Select
-                        value={selectedCounty.toString()}
-                        onValueChange={(value) =>
-                            setSelectedCounty(value === 'ALL' ? 'ALL' : parseInt(value))
-                        }
-                    >
-                        <SelectTrigger className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] text-[var(--platform-ink)]">
-                            <SelectValue placeholder={t('institutions.filterByCounty')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">{t('institutions.allCounties')}</SelectItem>
-                            {counties.map((county) => (
-                                <SelectItem key={county.id} value={county.id.toString()}>
-                                    {county.name}
+                    {selectedCountry === 'RO' ? (
+                        <div className="space-y-1.5">
+                            <span
+                                id="onboarding-institution-county-label"
+                                className="block text-xs font-semibold text-[var(--platform-ink-muted-strong)]"
+                            >
+                                {t('institutions.filterByCounty')}
+                            </span>
+                            <Select
+                                value={selectedCounty.toString()}
+                                onValueChange={(value) => {
+                                    setSelectedCounty(
+                                        value === 'ALL' ? 'ALL' : Number.parseInt(value, 10),
+                                    );
+                                    setSelectedInstitutionId(null);
+                                }}
+                            >
+                                <SelectTrigger
+                                    aria-labelledby="onboarding-institution-county-label"
+                                    className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] text-[var(--platform-ink)]"
+                                >
+                                    <SelectValue placeholder={t('institutions.filterByCounty')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">
+                                        {t('institutions.allCounties')}
+                                    </SelectItem>
+                                    {counties.map((county) => (
+                                        <SelectItem key={county.id} value={county.id.toString()}>
+                                            {county.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    ) : null}
+
+                    <div className="space-y-1.5">
+                        <span
+                            id="onboarding-institution-type-label"
+                            className="block text-xs font-semibold text-[var(--platform-ink-muted-strong)]"
+                        >
+                            {t('institutions.filterByType')}
+                        </span>
+                        <Select
+                            value={selectedType}
+                            onValueChange={(value) => {
+                                setSelectedType(value as InstitutionType | 'ALL');
+                                setSelectedInstitutionId(null);
+                            }}
+                        >
+                            <SelectTrigger
+                                aria-labelledby="onboarding-institution-type-label"
+                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)] text-[var(--platform-ink)]"
+                            >
+                                <SelectValue placeholder={t('institutions.filterByType')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">{t('institutions.allTypes')}</SelectItem>
+                                <SelectItem value="GIMNAZIU">
+                                    {t('institutions.types.gimnaziu')}
                                 </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                                <SelectItem value="LICEU">
+                                    {t('institutions.types.liceu')}
+                                </SelectItem>
+                                <SelectItem value="FACULTATE">
+                                    {t('institutions.types.facultate')}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 {countiesError ? (
@@ -209,7 +310,9 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => void loadCounties()}
+                            onClick={() =>
+                                void (countries.length === 0 ? loadCountries() : loadCounties())
+                            }
                             className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-transparent text-[var(--platform-ink)] shadow-none"
                         >
                             <RefreshCw className="me-2 h-4 w-4" aria-hidden="true" />
@@ -285,7 +388,17 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
                                     >
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-start gap-2 mb-1">
+                                                <div className="mb-1 flex items-start gap-2">
+                                                    <CountryFlag
+                                                        countryCode={institution.country.code}
+                                                        countryName={getCountryDisplayName(
+                                                            institution.country,
+                                                            locale,
+                                                        )}
+                                                        size="sm"
+                                                        decorative
+                                                        className="mt-0.5 shrink-0"
+                                                    />
                                                     <h4 className="font-medium text-sm line-clamp-2 flex-1">
                                                         {institution.name}
                                                     </h4>
@@ -293,9 +406,17 @@ export function InstitutionSearchSelect({ onInstitutionSelected }: InstitutionSe
                                                         <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {institution.county.name}
+                                                <div className="mb-2 flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <MapPin
+                                                        className="h-3 w-3 shrink-0"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span>
+                                                        {getInstitutionLocationLabel(
+                                                            institution,
+                                                            locale,
+                                                        )}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <Badge

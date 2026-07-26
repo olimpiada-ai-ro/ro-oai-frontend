@@ -990,7 +990,8 @@
         "title": "ქვეყნები",
         "selectCountry": "ქვეყნის არჩევა",
         "defaultCountry": "რუმინეთი",
-        "country": "ქვეყანა"
+        "country": "ქვეყანა",
+        "allCountries": "ყველა ქვეყანა"
     },
     "rankings": {
         "institutionTitle": "დაწესებულებების რეიტინგი",

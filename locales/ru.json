@@ -990,7 +990,8 @@
         "title": "Страны",
         "selectCountry": "Выбрать страну",
         "defaultCountry": "Румыния",
-        "country": "Страна"
+        "country": "Страна",
+        "allCountries": "Все страны"
     },
     "rankings": {
         "institutionTitle": "Рейтинг учреждений",

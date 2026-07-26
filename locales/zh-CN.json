@@ -990,7 +990,8 @@
         "title": "国家",
         "selectCountry": "选择国家",
         "defaultCountry": "罗马尼亚",
-        "country": "国家"
+        "country": "国家",
+        "allCountries": "所有国家"
     },
     "rankings": {
         "institutionTitle": "机构排名",

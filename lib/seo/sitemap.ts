@@ -82,7 +82,7 @@ export function generateStaticPagesSitemap(): SitemapEntry[] {
             priority: SITEMAP_CONFIG.priority.static,
         },
         {
-            path: '/counties',
+            path: '/countries',
             changeFrequency: SITEMAP_CONFIG.changeFrequency.static,
             priority: SITEMAP_CONFIG.priority.static,
         },

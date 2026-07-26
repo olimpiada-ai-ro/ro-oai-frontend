@@ -990,7 +990,8 @@
         "title": "Valstis",
         "selectCountry": "Izvēlēties valsti",
         "defaultCountry": "Rumānija",
-        "country": "Valsts"
+        "country": "Valsts",
+        "allCountries": "Visas valstis"
     },
     "rankings": {
         "institutionTitle": "Iestāžu reitingi",

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from '@/i18n/routing';
-import { getCounties } from '@/lib/api';
+import { getCounties, getCountryCounties } from '@/lib/api';
 import type { CountyResponse } from '@/lib/types';
 
 function normalizeSearchValue(value: string, locale: string) {
@@ -21,7 +21,11 @@ function normalizeSearchValue(value: string, locale: string) {
         .trim();
 }
 
-export function CountyListView() {
+interface CountyListViewProps {
+    countryCode?: string;
+}
+
+export function CountyListView({ countryCode }: CountyListViewProps = {}) {
     const t = useTranslations();
     const locale = useLocale();
     const { toast } = useToast();
@@ -39,8 +43,12 @@ export function CountyListView() {
             setLoadFailed(false);
 
             try {
-                const data = await getCounties(true);
-                if (active) setCounties(data);
+                const data = countryCode
+                    ? await getCountryCounties(countryCode, true)
+                    : await getCounties(true);
+                if (active) {
+                    setCounties(data.filter((county) => county.code !== 'XX'));
+                }
             } catch (error) {
                 if (!active) return;
 
@@ -62,7 +70,7 @@ export function CountyListView() {
         return () => {
             active = false;
         };
-    }, [reloadKey, t, toast]);
+    }, [countryCode, reloadKey, t, toast]);
 
     const filteredCounties = useMemo(() => {
         const collator = new Intl.Collator(locale, { sensitivity: 'base' });
@@ -187,7 +195,11 @@ export function CountyListView() {
                                             className="border-b border-[var(--platform-line)]"
                                         >
                                             <Link
-                                                href={`/counties/${county.id}`}
+                                                href={
+                                                    countryCode
+                                                        ? `/countries/${countryCode}/counties/${county.id}`
+                                                        : `/counties/${county.id}`
+                                                }
                                                 className="group flex min-h-16 items-center gap-3 px-2 py-3 text-[var(--platform-ink)] transition-colors hover:bg-[var(--platform-paper-strong)]"
                                             >
                                                 <span className="min-w-0 flex-1">

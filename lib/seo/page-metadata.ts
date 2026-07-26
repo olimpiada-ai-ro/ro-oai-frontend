@@ -646,6 +646,55 @@ export async function generateInstitutionsMetadata(locale: string): Promise<Page
 }
 
 // ============================================================================
+// Countries Page Metadata
+// ============================================================================
+
+/**
+ * Generate metadata for the country directory page.
+ */
+export async function generateCountriesMetadata(locale: string): Promise<PageMetadata> {
+    try {
+        const messages = await getMessages(locale as Locale);
+
+        const title = getNestedValue(messages, 'countries.title') || 'Countries';
+        const description =
+            getNestedValue(messages, 'countries.description') ||
+            getNestedValue(messages, 'institutions.description') ||
+            'Explore countries represented on MLCompete, discover their educational institutions, and browse Romania by county on the platform.';
+
+        const ogImage = generateGenericOgImageUrl('Countries', description);
+
+        const config: MetadataConfig = {
+            title: `${title} - MLCompete`,
+            description,
+            keywords: [
+                'countries',
+                'educational institutions',
+                'Romania counties',
+                'machine learning community',
+            ],
+            image: ogImage,
+            type: 'website',
+            locale,
+            alternateLocales: SUPPORTED_LOCALES.filter((l) => l !== locale),
+            canonicalUrl: getCanonicalUrl('/countries', locale),
+        };
+
+        return generateMetadata(config);
+    } catch (error) {
+        console.error('[SEO] Failed to generate countries metadata:', error);
+        return generateMetadata(
+            validateMetadataConfig({
+                title: 'Countries - MLCompete',
+                description:
+                    'Explore countries represented on MLCompete, discover their educational institutions, and browse Romania by county on the platform.',
+                locale,
+            }),
+        );
+    }
+}
+
+// ============================================================================
 // Counties Page Metadata
 // ============================================================================
 

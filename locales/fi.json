@@ -990,7 +990,8 @@
         "title": "Maat",
         "selectCountry": "Valitse maa",
         "defaultCountry": "Romania",
-        "country": "Maa"
+        "country": "Maa",
+        "allCountries": "Kaikki maat"
     },
     "rankings": {
         "institutionTitle": "Oppilaitossijoitukset",

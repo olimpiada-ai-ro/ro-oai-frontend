@@ -18,7 +18,7 @@ vi.mock('next-intl', () => ({
             'header.openMenu': 'Open menu',
             'navigation.achievements': 'Achievements',
             'navigation.competitions': 'Competitions',
-            'navigation.counties': 'Counties',
+            'countries.title': 'Countries',
             'navigation.institutions': 'Institutions',
             'navigation.leaderboard': 'Leaderboard',
             'navigation.problems': 'Problems',

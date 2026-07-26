@@ -990,7 +990,8 @@
         "title": "Šalys",
         "selectCountry": "Pasirinkti šalį",
         "defaultCountry": "Rumunija",
-        "country": "Šalis"
+        "country": "Šalis",
+        "allCountries": "Visos šalys"
     },
     "rankings": {
         "institutionTitle": "Institucijų reitingai",

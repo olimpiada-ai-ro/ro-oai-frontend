@@ -47,6 +47,7 @@ import {
     getMyMembershipRequests,
     leaveInstitution,
 } from '@/lib/api';
+import { getCountryDisplayName } from '@/lib/country-display';
 import { platformSans } from '@/lib/platform-fonts';
 import type { InstitutionResponse, InstitutionType, MembershipRequest } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -338,6 +339,10 @@ export function InstitutionDetailView({ institutionId }: InstitutionDetailViewPr
     );
     const isMember = userInstitutionId === institution.id;
     const typeLabel = getInstitutionTypeLabel(institution.type);
+    const isRomanian = institution.country?.code === 'RO';
+    const countryName = institution.country
+        ? getCountryDisplayName(institution.country, locale)
+        : null;
 
     const membershipControl = session?.id ? (
         membershipLoadedFor !== session.id ? (
@@ -420,35 +425,54 @@ export function InstitutionDetailView({ institutionId }: InstitutionDetailViewPr
                 title={<span dir="auto">{institution.name}</span>}
                 description={
                     <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span>{institution.county.name}</span>
-                        {institution.country ? (
+                        {isRomanian ? (
                             <>
+                                <Link
+                                    href={`/countries/RO/counties/${institution.county.id}`}
+                                    className="font-medium underline-offset-4 hover:text-[var(--platform-violet)] hover:underline"
+                                >
+                                    {institution.county.name}
+                                </Link>
                                 <span aria-hidden="true">·</span>
-                                <span>{institution.country.name}</span>
                             </>
+                        ) : null}
+                        {institution.country ? (
+                            <Link
+                                href={`/countries/${institution.country.code}`}
+                                className="font-medium underline-offset-4 hover:text-[var(--platform-violet)] hover:underline"
+                            >
+                                {countryName}
+                            </Link>
                         ) : null}
                     </span>
                 }
                 aside={membershipControl}
             />
 
-            <dl className="mt-8 grid grid-cols-2 border-y border-[var(--platform-line-strong)] bg-[var(--platform-paper-strong)] md:grid-cols-4">
+            <dl
+                className={cn(
+                    'mt-8 grid grid-cols-2 border-y border-[var(--platform-line-strong)] bg-[var(--platform-paper-strong)]',
+                    isRomanian ? 'md:grid-cols-4' : 'md:grid-cols-3',
+                )}
+            >
                 <InstitutionMetric
                     icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
                     label={t('rankings.type')}
                     value={typeLabel}
                 />
-                <InstitutionMetric
-                    icon={<MapPin className="h-5 w-5" aria-hidden="true" />}
-                    label={t('rankings.county')}
-                    value={institution.county.name}
-                />
+                {isRomanian ? (
+                    <InstitutionMetric
+                        icon={<MapPin className="h-5 w-5" aria-hidden="true" />}
+                        label={t('rankings.county')}
+                        value={institution.county.name}
+                    />
+                ) : null}
                 <InstitutionMetric
                     icon={
                         institution.country ? (
                             <CountryFlag
                                 countryCode={institution.country.code}
-                                countryName={institution.country.name}
+                                countryName={countryName ?? institution.country.name}
                                 size="sm"
                             />
                         ) : (
@@ -456,7 +480,7 @@ export function InstitutionDetailView({ institutionId }: InstitutionDetailViewPr
                         )
                     }
                     label={t('institutions.country')}
-                    value={institution.country?.name || t('common.na')}
+                    value={countryName || t('common.na')}
                 />
                 <InstitutionMetric
                     icon={<Users className="h-5 w-5" aria-hidden="true" />}
