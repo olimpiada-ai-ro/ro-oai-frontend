@@ -14,6 +14,7 @@ describe('appearance preferences', () => {
     it('keeps canonical interface themes and color modes', () => {
         expect(normalizeInterfaceTheme('onia-v1')).toBe('onia-v1');
         expect(normalizeInterfaceTheme('onia-v2')).toBe('onia-v2');
+        expect(normalizeInterfaceTheme('plain')).toBe('plain');
         expect(normalizeColorMode('system')).toBe('system');
         expect(normalizeColorMode('light')).toBe('light');
         expect(normalizeColorMode('dark')).toBe('dark');
@@ -92,6 +93,21 @@ describe('appearance preferences', () => {
         expect(document.documentElement.dataset.interfaceTheme).toBe('onia-v1');
         expect(document.documentElement.dataset.colorMode).toBe('dark');
         expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+
+    it('bootstraps every known interface theme and ignores unknown ones', () => {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: () => ({ matches: false }),
+        });
+
+        window.localStorage.setItem('mlcompete-interface-theme', 'plain');
+        window.eval(createAppearanceBootstrapScript(DEFAULT_APPEARANCE, false));
+        expect(document.documentElement.dataset.interfaceTheme).toBe('plain');
+
+        window.localStorage.setItem('mlcompete-interface-theme', 'unknown-theme');
+        window.eval(createAppearanceBootstrapScript(DEFAULT_APPEARANCE, false));
+        expect(document.documentElement.dataset.interfaceTheme).toBe(DEFAULT_APPEARANCE.uiTheme);
     });
 
     it('keeps authenticated database preferences authoritative during bootstrap', () => {

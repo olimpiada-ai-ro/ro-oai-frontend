@@ -1,4 +1,4 @@
-export const INTERFACE_THEMES = ['onia-v2', 'onia-v1'] as const;
+export const INTERFACE_THEMES = ['onia-v2', 'onia-v1', 'plain'] as const;
 export const COLOR_MODES = ['system', 'light', 'dark'] as const;
 
 export type InterfaceTheme = (typeof INTERFACE_THEMES)[number];
@@ -85,5 +85,5 @@ export function createAppearanceBootstrapScript(
         COLOR_MODE_STORAGE_KEY,
     )});if(sm!=='system'&&sm!=='light'&&sm!=='dark')sm=localStorage.getItem(${JSON.stringify(
         LEGACY_COLOR_MODE_STORAGE_KEY,
-    )});if(st==='onia-v1'||st==='onia-v2')t=st;if(sm==='system'||sm==='light'||sm==='dark')m=sm;}var x=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);d.dataset.interfaceTheme=t;d.dataset.colorMode=m;d.classList.toggle('dark',x);d.style.colorScheme=x?'dark':'light';}catch(e){}})();`;
+    )});if(${JSON.stringify(INTERFACE_THEMES)}.indexOf(st)>=0)t=st;if(sm==='system'||sm==='light'||sm==='dark')m=sm;}var x=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);d.dataset.interfaceTheme=t;d.dataset.colorMode=m;d.classList.toggle('dark',x);d.style.colorScheme=x?'dark':'light';}catch(e){}})();`;
 }

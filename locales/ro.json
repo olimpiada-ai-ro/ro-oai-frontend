@@ -775,6 +775,8 @@
         "oniaV2Description": "Stilul actual inspirat de caietul de concurs, cu forme precise și accente violet puternice.",
         "oniaV1Name": "ONIA v1 · Clasic",
         "oniaV1Description": "Stilul familiar de dinaintea redesignului din 2026, cu suprafețe rotunjite și accente albastre-violet.",
+        "plainName": "Simplu",
+        "plainDescription": "Aspect plat și minimalist, cu linkuri albastre și file subliniate, în spiritul platformelor clasice de evaluare.",
         "colorModeLabel": "Mod de culoare",
         "colorModeDescription": "Alege cum sunt aplicate culorile luminoase și întunecate. Modul curent: {mode}",
         "appearanceSaving": "Salvăm alegerea în cont…",

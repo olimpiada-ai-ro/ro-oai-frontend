@@ -822,6 +822,8 @@
         "oniaV2Description": "The current competition-notebook style, with crisp geometry and bold violet accents.",
         "oniaV1Name": "ONIA v1 · Classic",
         "oniaV1Description": "The familiar style from before the 2026 redesign, with rounded surfaces and blue-violet accents.",
+        "plainName": "Plain",
+        "plainDescription": "A flat, minimal layout with blue links and underlined tabs, in the spirit of classic online judges.",
         "colorModeLabel": "Color mode",
         "colorModeDescription": "Choose how light and dark colors are applied. Current mode: {mode}",
         "appearanceSaving": "Saving this choice to your account…",

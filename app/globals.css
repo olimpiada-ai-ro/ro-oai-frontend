@@ -2388,7 +2388,7 @@ body:has(.platform-page-shell) {
     --header-line-strong: oklch(0.5 0.07 287);
 }
 
-html[data-interface-theme='onia-v1'] {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) {
     --header-surface: hsl(var(--popover));
     --header-surface-strong: hsl(var(--secondary));
     --header-ink: hsl(var(--foreground));
@@ -2412,7 +2412,7 @@ html[data-interface-theme='onia-v1'] {
     --header-menu-shadow: 0 18px 45px hsl(var(--foreground) / 0.16);
 }
 
-html[data-interface-theme='onia-v1'] body {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) body {
     font-family:
         Inter,
         ui-sans-serif,
@@ -2423,7 +2423,9 @@ html[data-interface-theme='onia-v1'] body {
         sans-serif;
 }
 
-html[data-interface-theme='onia-v1'] :where(.platform-page-shell, .platform-overlay-surface) {
+/* :is() (not :where()) so these beat the base `.dark .platform-page-shell` palette. */
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    :is(.platform-page-shell, .platform-overlay-surface) {
     --platform-paper: hsl(var(--background));
     --platform-paper-strong: hsl(var(--secondary));
     --platform-ink: hsl(var(--foreground));
@@ -2442,7 +2444,7 @@ html[data-interface-theme='onia-v1'] :where(.platform-page-shell, .platform-over
     --platform-line-strong: color-mix(in oklch, hsl(var(--border)) 78%, hsl(var(--foreground)));
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-shell {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-page-shell {
     width: 100%;
     margin: 0;
     overflow: visible;
@@ -2452,30 +2454,33 @@ html[data-interface-theme='onia-v1'] .platform-page-shell {
     font-family: inherit;
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-inner {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-page-inner {
     width: 100%;
     max-width: 80rem;
     padding: clamp(1.5rem, 3vw, 2.5rem) 0 clamp(3rem, 6vw, 5rem);
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-header {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-page-header {
     gap: 1.25rem;
     padding-block: 0 clamp(1.5rem, 3vw, 2.5rem);
     border-bottom-color: hsl(var(--border));
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-header::after,
-html[data-interface-theme='onia-v1'] .platform-page-eyebrow::before {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .platform-page-header::after,
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .platform-page-eyebrow::before {
     display: none;
 }
 
-html[data-interface-theme='onia-v1'] :where(.platform-page-eyebrow, .platform-section-eyebrow) {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    :where(.platform-page-eyebrow, .platform-section-eyebrow) {
     margin-bottom: 0.625rem;
     color: hsl(var(--primary));
     letter-spacing: 0.08em;
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-title {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-page-title {
     max-width: 24ch;
     font-family: inherit;
     font-size: clamp(2rem, 4vw, 3rem);
@@ -2484,13 +2489,15 @@ html[data-interface-theme='onia-v1'] .platform-page-title {
     letter-spacing: -0.035em;
 }
 
-html[data-interface-theme='onia-v1'] .platform-page-description {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .platform-page-description {
     margin-top: 0.75rem;
     font-size: 1rem;
     line-height: 1.65;
 }
 
-html[data-interface-theme='onia-v1'] :where(.platform-panel, .achievement-register-card) {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    :where(.platform-panel, .achievement-register-card) {
     border-color: hsl(var(--border));
     border-radius: var(--radius);
     background: hsl(var(--card));
@@ -2499,32 +2506,33 @@ html[data-interface-theme='onia-v1'] :where(.platform-panel, .achievement-regist
         0 10px 28px hsl(var(--foreground) / 0.045);
 }
 
-html[data-interface-theme='onia-v1'] :where(.platform-panel, .achievement-register-card):hover {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    :where(.platform-panel, .achievement-register-card):hover {
     box-shadow:
         0 2px 5px hsl(var(--foreground) / 0.1),
         0 14px 32px hsl(var(--foreground) / 0.065);
 }
 
-html[data-interface-theme='onia-v1'] .platform-toolbar {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-toolbar {
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
     background: hsl(var(--secondary));
 }
 
-html[data-interface-theme='onia-v1'] .platform-empty-state {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-empty-state {
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
     background: hsl(var(--card));
 }
 
-html[data-interface-theme='onia-v1'] .platform-empty-icon {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .platform-empty-icon {
     border-radius: 9999px;
     background: hsl(var(--primary) / 0.1);
     color: hsl(var(--primary));
     box-shadow: none;
 }
 
-html[data-interface-theme='onia-v1']
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
     :where(.platform-page-shell, .platform-overlay-surface)
     :where(
         [class*='shadow-[3px_3px'],
@@ -2542,12 +2550,13 @@ html[data-interface-theme='onia-v1']
         0 10px 28px hsl(var(--foreground) / 0.05) !important;
 }
 
-html[data-interface-theme='onia-v1'] [data-ui-theme-preview='onia-v2'] {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    [data-ui-theme-preview='onia-v2'] {
     border-radius: 0;
     box-shadow: 4px 4px 0 oklch(0.79 0.04 289) !important;
 }
 
-html[data-interface-theme='onia-v1'] .home-page-shell {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .home-page-shell {
     --home-paper: hsl(var(--background));
     --home-paper-strong: hsl(var(--secondary));
     --home-ink: hsl(var(--foreground));
@@ -2564,7 +2573,8 @@ html[data-interface-theme='onia-v1'] .home-page-shell {
     --home-on-accent: hsl(var(--primary-foreground));
     --home-line: hsl(var(--border));
     --home-line-strong: color-mix(in oklch, hsl(var(--border)) 78%, hsl(var(--foreground)));
-    --home-paper-muted: hsl(var(--muted-foreground));
+    /* Muted text on inverted (violet/ink) surfaces, so it derives from paper, not muted-foreground. */
+    --home-paper-muted: hsl(var(--background) / 0.88);
     --home-paper-line: hsl(var(--border));
     --home-on-ink-accent: hsl(var(--primary));
 
@@ -2576,52 +2586,59 @@ html[data-interface-theme='onia-v1'] .home-page-shell {
     font-family: inherit;
 }
 
-html[data-interface-theme='onia-v1'] .home-grid-paper {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .home-grid-paper {
     background-image: none;
 }
 
-html[data-interface-theme='onia-v1'] .home-board-grid {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .home-board-grid {
     background-image:
         radial-gradient(circle at 18% 22%, hsl(var(--accent) / 0.55), transparent 32%),
         radial-gradient(circle at 82% 76%, hsl(var(--info) / 0.32), transparent 34%);
 }
 
-html[data-interface-theme='onia-v1'] .home-display {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .home-display {
     font-family: inherit;
     font-variation-settings: normal;
     font-weight: 700;
 }
 
-html[data-interface-theme='onia-v1'] .home-page-shell h1.home-display {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .home-page-shell
+    h1.home-display {
     font-size: clamp(2.5rem, 6vw, 4.75rem) !important;
     line-height: 1.02 !important;
     letter-spacing: -0.045em !important;
 }
 
-html[data-interface-theme='onia-v1'] .home-page-shell :where(a, button) {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .home-page-shell
+    :where(a, button) {
     border-radius: calc(var(--radius) - 2px);
 }
 
-html[data-interface-theme='onia-v1']
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
     .home-page-shell
     :where([class*='shadow-[12px_12px'], [class*='shadow-[18px_18px']) {
     border-radius: var(--radius);
     box-shadow: 0 18px 50px hsl(var(--foreground) / 0.16) !important;
 }
 
-html.dark[data-interface-theme='onia-v1'] .home-hero-decoration {
+html.dark:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .home-hero-decoration {
     background: color-mix(in oklch, hsl(var(--primary)) 24%, hsl(var(--background)));
 }
 
-html.dark[data-interface-theme='onia-v1'] .home-hero-eyebrow {
+html.dark:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .home-hero-eyebrow {
     color: hsl(var(--foreground));
 }
 
-html.dark[data-interface-theme='onia-v1'] .home-hero-eyebrow > span {
+html.dark:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .home-hero-eyebrow
+    > span {
     background: hsl(var(--primary));
 }
 
-html[data-interface-theme='onia-v1'] .site-header {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-header {
     border-bottom: 1px solid hsl(var(--border)) !important;
     background: hsl(var(--background) / 0.9) !important;
     color: hsl(var(--foreground)) !important;
@@ -2632,45 +2649,175 @@ html[data-interface-theme='onia-v1'] .site-header {
     backdrop-filter: blur(14px);
 }
 
-html[data-interface-theme='onia-v1'] .site-mobile-menu {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-mobile-menu {
     font-family: inherit;
 }
 
-html[data-interface-theme='onia-v1'] .site-header :where(a, button) {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .site-header
+    :where(a, button) {
     border-radius: calc(var(--radius) - 4px);
 }
 
-html[data-interface-theme='onia-v1'] .site-header nav a {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-header nav a {
     color: hsl(var(--muted-foreground)) !important;
 }
 
-html[data-interface-theme='onia-v1'] .site-header nav a:hover {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-header nav a:hover {
     border-color: hsl(var(--border)) !important;
     background: hsl(var(--secondary)) !important;
     color: hsl(var(--foreground)) !important;
 }
 
-html[data-interface-theme='onia-v1'] .site-header nav a[aria-current='page'] {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .site-header
+    nav
+    a[aria-current='page'] {
     border-color: hsl(var(--primary)) !important;
     background: hsl(var(--primary)) !important;
     color: hsl(var(--primary-foreground)) !important;
     box-shadow: 0 1px 2px hsl(var(--foreground) / 0.12) !important;
 }
 
-html[data-interface-theme='onia-v1'] .site-footer {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-footer {
     border-top: 1px solid hsl(var(--border)) !important;
     background: hsl(var(--background)) !important;
     color: hsl(var(--foreground)) !important;
     font-family: inherit;
 }
 
-html[data-interface-theme='onia-v1'] .site-footer :where(a, p) {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain'])
+    .site-footer
+    :where(a, p) {
     border-color: hsl(var(--border)) !important;
     color: hsl(var(--muted-foreground)) !important;
 }
 
-html[data-interface-theme='onia-v1'] .site-footer a:hover {
+html:is([data-interface-theme='onia-v1'], [data-interface-theme='plain']) .site-footer a:hover {
     color: hsl(var(--primary)) !important;
+}
+
+/* Plain: builds on the token-mapped ONIA v1 rules above with a flat, link-blue,
+ * underlined-tab look in the spirit of classic online-judge interfaces. */
+html[data-interface-theme='plain'] {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    --primary: 203 62% 38%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 203 62% 30%;
+    --primary-focus: 203 62% 45%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 13%;
+    --secondary-hover: 0 0% 91%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 48 100% 65%;
+    --accent-foreground: 0 0% 9%;
+    --accent-hover: 48 100% 58%;
+    --success: 137 58% 32%;
+    --success-foreground: 0 0% 100%;
+    --info: 203 62% 38%;
+    --border: 0 0% 88%;
+    --input: 0 0% 82%;
+    --ring: 203 62% 45%;
+    --radius: 0.5rem;
+    --header-selected: transparent;
+    --header-selected-ink: hsl(var(--foreground));
+    --header-active-shadow: inset 0 -2px 0 hsl(var(--foreground));
+    --header-menu-shadow: 0 8px 24px hsl(0 0% 0% / 0.12);
+}
+
+html.dark[data-interface-theme='plain'] {
+    --background: 0 0% 11%;
+    --foreground: 0 0% 90%;
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 204 70% 64%;
+    --primary-foreground: 0 0% 9%;
+    --primary-hover: 204 70% 72%;
+    --primary-focus: 204 70% 70%;
+    --secondary: 0 0% 19%;
+    --secondary-foreground: 0 0% 90%;
+    --secondary-hover: 0 0% 23%;
+    --muted: 0 0% 17%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 48 95% 60%;
+    --accent-foreground: 0 0% 9%;
+    --accent-hover: 48 95% 68%;
+    --success: 137 45% 55%;
+    --success-foreground: 0 0% 9%;
+    --info: 204 70% 64%;
+    --border: 0 0% 23%;
+    --input: 0 0% 28%;
+    --ring: 204 70% 64%;
+    --header-menu-shadow: 0 8px 24px hsl(0 0% 0% / 0.5);
+}
+
+/* The yellow action color always carries dark ink, like the ONIA v2 citron it replaces. */
+html[data-interface-theme='plain']
+    :is(.platform-page-shell, .platform-overlay-surface, .home-page-shell) {
+    --platform-on-accent: hsl(var(--accent-foreground));
+    --home-on-accent: hsl(var(--accent-foreground));
+    /* Homepage badges sit on the blue primary band, so blue "coral" would vanish. */
+    --home-coral: hsl(var(--accent));
+}
+
+html[data-interface-theme='plain'] body {
+    font-family: 'YS Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html[data-interface-theme='plain'] :where(.platform-page-eyebrow, .platform-section-eyebrow) {
+    color: hsl(var(--muted-foreground));
+}
+
+html[data-interface-theme='plain'] .platform-page-title {
+    max-width: none;
+    color: hsl(var(--primary));
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+html[data-interface-theme='plain'] .home-display {
+    font-weight: 500;
+}
+
+html[data-interface-theme='plain'] .home-board-grid {
+    background-image: none;
+}
+
+/* Contest pages are flat: borders separate surfaces, nothing floats. */
+html[data-interface-theme='plain']
+    :where(.platform-panel, .achievement-register-card, .achievement-register-card:hover),
+html[data-interface-theme='plain']
+    :where(.platform-page-shell, .platform-overlay-surface, .home-page-shell)
+    :where([class*='shadow-[']):not(.ui-theme-preview):not(.ui-theme-preview *) {
+    box-shadow: none !important;
+}
+
+html[data-interface-theme='plain'] .site-header {
+    background: hsl(var(--background)) !important;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+html[data-interface-theme='plain'] .site-header nav a:hover {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+html[data-interface-theme='plain'] .site-header nav a[aria-current='page'] {
+    border-color: transparent !important;
+    border-radius: 0;
+    background: transparent !important;
+    color: hsl(var(--foreground)) !important;
+    box-shadow: inset 0 -2px 0 hsl(var(--foreground)) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

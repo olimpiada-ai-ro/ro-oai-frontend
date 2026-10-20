@@ -20,6 +20,7 @@ import {
     ShieldCheck,
     Sparkles,
     Sun,
+    Terminal,
     Trash2,
     UserRound,
     type LucideIcon,
@@ -309,6 +310,29 @@ type InterfaceThemePreviewProps = {
 };
 
 function InterfaceThemePreview({ theme }: InterfaceThemePreviewProps) {
+    if (theme === 'plain') {
+        return (
+            <span
+                data-ui-theme-preview="plain"
+                className="ui-theme-preview relative block h-28 overflow-hidden rounded-lg border border-neutral-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900"
+                aria-hidden="true"
+            >
+                <span className="flex h-4 items-center gap-1.5 border-b border-neutral-200 pb-2 dark:border-neutral-700">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#ffdb4d]" />
+                    <span className="h-2 w-8 rounded-full bg-neutral-800 dark:bg-neutral-200" />
+                </span>
+                <span className="mt-3 block h-2.5 w-2/3 rounded-full bg-[#2b7fb5] dark:bg-[#62a9dc]" />
+                <span className="mt-3 flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className="h-1.5 w-8 rounded-full bg-[#2b7fb5]/70 dark:bg-[#62a9dc]/70" />
+                    <span className="h-1.5 w-8 rounded-full border-b-2 border-neutral-800 bg-neutral-800 dark:border-neutral-200 dark:bg-neutral-200" />
+                    <span className="h-1.5 w-8 rounded-full bg-[#2b7fb5]/70 dark:bg-[#62a9dc]/70" />
+                </span>
+                <span className="mt-2.5 block h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                <span className="mt-1.5 block h-1.5 w-4/5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+            </span>
+        );
+    }
+
     if (theme === 'onia-v1') {
         return (
             <span
@@ -362,6 +386,12 @@ function InterfaceThemePreview({ theme }: InterfaceThemePreviewProps) {
     );
 }
 
+const INTERFACE_THEME_ICONS: Record<InterfaceTheme, LucideIcon> = {
+    'onia-v2': Sparkles,
+    'onia-v1': LayoutTemplate,
+    plain: Terminal,
+};
+
 type InterfaceThemeChoiceProps = {
     theme: InterfaceTheme;
     label: string;
@@ -371,7 +401,7 @@ type InterfaceThemeChoiceProps = {
 
 function InterfaceThemeChoice({ theme, label, description, selected }: InterfaceThemeChoiceProps) {
     const descriptionId = `interface-theme-${theme}-description`;
-    const Icon = theme === 'onia-v2' ? Sparkles : LayoutTemplate;
+    const Icon = INTERFACE_THEME_ICONS[theme];
 
     return (
         <RadioGroupPrimitive.Item
@@ -1414,7 +1444,7 @@ export function SettingsView() {
                                             void setInterfaceTheme(value);
                                         }
                                     }}
-                                    className="grid overflow-hidden border border-[var(--platform-line-strong)] sm:grid-cols-2"
+                                    className="grid overflow-hidden border border-[var(--platform-line-strong)] sm:grid-cols-3"
                                 >
                                     <InterfaceThemeChoice
                                         theme="onia-v2"
@@ -1427,6 +1457,12 @@ export function SettingsView() {
                                         label={t('oniaV1Name')}
                                         description={t('oniaV1Description')}
                                         selected={uiTheme === 'onia-v1'}
+                                    />
+                                    <InterfaceThemeChoice
+                                        theme="plain"
+                                        label={t('plainName')}
+                                        description={t('plainDescription')}
+                                        selected={uiTheme === 'plain'}
                                     />
                                 </RadioGroupPrimitive.Root>
 

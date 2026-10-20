@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutTemplate, MonitorIcon, MoonIcon, Sparkles, SunIcon } from 'lucide-react';
+import { LayoutTemplate, MonitorIcon, MoonIcon, Sparkles, SunIcon, Terminal } from 'lucide-react';
 
 import {
     DropdownMenu,
@@ -90,6 +90,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     const interfaceThemeOptions = [
         { value: 'onia-v2', label: t('oniaV2Name'), icon: Sparkles },
         { value: 'onia-v1', label: t('oniaV1Name'), icon: LayoutTemplate },
+        { value: 'plain', label: t('plainName'), icon: Terminal },
     ] as const;
     const CurrentThemeIcon = resolvedColorMode === 'dark' ? MoonIcon : SunIcon;
 
