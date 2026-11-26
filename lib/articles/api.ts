@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { fetchApi } from '@/lib/api';
 import { fetchPublicApi } from '@/lib/public-api';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale, type ProblemAuthor } from '@/lib/types';
+import { normalizeIdentityPresentation } from '@/lib/identity-presentation';
 import type {
     ArticleDetail,
     ArticleDraftInput,
@@ -144,6 +145,7 @@ function normalizeAuthors(value: unknown): ArticleAuthor[] {
                     typeof author.isProblemAuthor === 'boolean'
                         ? author.isProblemAuthor
                         : undefined,
+                identityPresentation: normalizeIdentityPresentation(author.identityPresentation),
             },
         ];
     });
@@ -190,6 +192,9 @@ function normalizeProblemAuthors(value: unknown): ProblemAuthor[] {
                     displayOrder: Number.isFinite(author.displayOrder)
                         ? Number(author.displayOrder)
                         : index,
+                    identityPresentation: normalizeIdentityPresentation(
+                        author.identityPresentation,
+                    ),
                 },
             ];
         })
@@ -590,12 +595,14 @@ export async function getPublishedArticles({
     kind,
     problemId,
     authorId,
+    locale,
 }: {
     page?: number;
     size?: number;
     kind?: ArticleSummary['kind'];
     problemId?: number;
     authorId?: string;
+    locale?: Locale;
 } = {}): Promise<ArticlePage> {
     const url = apiUrl('/articles');
     url.searchParams.set('page', String(Math.max(0, page)));
@@ -607,7 +614,10 @@ export async function getPublishedArticles({
     // Publication and withdrawal are moderation decisions. Until the backend
     // can trigger on-demand Next.js invalidation, do not retain a public
     // pre-moderation snapshot after an archive or unpublish action.
-    const response = await fetchPublicApi(url, { cache: 'no-store' });
+    const response = await fetchPublicApi(url, {
+        cache: 'no-store',
+        headers: locale ? { 'accept-language': locale } : undefined,
+    });
     if (!response.ok) throw await parseError(response, 'Unable to load published articles');
 
     return normalizePage((await response.json()) as SpringPage<ArticleTransport>, size);
@@ -685,22 +695,28 @@ export async function getMyEditorialOpportunities(
     return normalizeEditorialOpportunityOverview(await response.json().catch(() => null));
 }
 
-export const getPublishedArticle = cache(async (slug: string): Promise<ArticleDetail> => {
-    const response = await fetchPublicApi(apiUrl(`/articles/${encodeURIComponent(slug)}`), {
-        cache: 'no-store',
-    });
-    if (!response.ok) throw await parseError(response, 'Unable to load the article');
-    return normalizeArticleDetail((await response.json()) as ArticleTransport);
-});
+export const getPublishedArticle = cache(
+    async (slug: string, locale?: Locale): Promise<ArticleDetail> => {
+        const response = await fetchPublicApi(apiUrl(`/articles/${encodeURIComponent(slug)}`), {
+            cache: 'no-store',
+            headers: locale ? { 'accept-language': locale } : undefined,
+        });
+        if (!response.ok) throw await parseError(response, 'Unable to load the article');
+        return normalizeArticleDetail((await response.json()) as ArticleTransport);
+    },
+);
 
 export async function getProblemArticles(
     problemId: number,
-    { page = 0, size = 12 }: { page?: number; size?: number } = {},
+    { page = 0, size = 12, locale }: { page?: number; size?: number; locale?: Locale } = {},
 ): Promise<ArticlePage> {
     const url = apiUrl(`/problems/${encodeURIComponent(problemId)}/articles`);
     url.searchParams.set('page', String(Math.max(0, page)));
     url.searchParams.set('size', String(Math.max(1, size)));
-    const response = await fetchPublicApi(url, { cache: 'no-store' });
+    const response = await fetchPublicApi(url, {
+        cache: 'no-store',
+        headers: locale ? { 'accept-language': locale } : undefined,
+    });
     if (!response.ok) throw await parseError(response, 'Unable to load problem editorials');
     const payload = (await response.json()) as ArticleTransport[] | SpringPage<ArticleTransport>;
     if (Array.isArray(payload)) {
@@ -719,12 +735,15 @@ export async function getProblemArticles(
 
 export async function getProfileArticles(
     profileId: string,
-    { page = 0, size = 12 }: { page?: number; size?: number } = {},
+    { page = 0, size = 12, locale }: { page?: number; size?: number; locale?: Locale } = {},
 ): Promise<ArticlePage> {
     const url = apiUrl(`/profile/${encodeURIComponent(profileId)}/articles`);
     url.searchParams.set('page', String(Math.max(0, page)));
     url.searchParams.set('size', String(Math.max(1, size)));
-    const response = await fetchPublicApi(url, { cache: 'no-store' });
+    const response = await fetchPublicApi(url, {
+        cache: 'no-store',
+        headers: locale ? { 'accept-language': locale } : undefined,
+    });
     if (!response.ok) throw await parseError(response, 'Unable to load authored articles');
     const payload = (await response.json()) as ArticleTransport[] | SpringPage<ArticleTransport>;
     if (Array.isArray(payload)) {

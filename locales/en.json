@@ -1213,6 +1213,34 @@
             "starts": "Starts",
             "ends": "Ends"
         },
+        "hybrid": {
+            "entryCheck": "Review competition entry requirements",
+            "format": "Theory test + project",
+            "theory": "Theory test",
+            "project": "Project",
+            "theoryReceived": "Your final answers have been received.",
+            "theoryMissing": "No answers were submitted.",
+            "theoryInstructions": "Choose one answer for each question. You can submit the test once. Your answers are final when you submit.",
+            "points": "{value, plural, one {# point} other {# points}}",
+            "evaluationCriteria": "Project evaluation criteria",
+            "maximum": "Maximum score: {maximum}.",
+            "submitTheory": "Submit final answers",
+            "submitting": "Submitting…",
+            "score": "Score: {score} / {maximum}",
+            "projectReceived": "Submitted file: {filename}",
+            "projectMissing": "No project was submitted.",
+            "fileLabel": "Project file",
+            "fileHelp": "Upload your project as a ZIP or PDF file (up to 20 MiB). You can replace it until the competition closes.",
+            "replaceProject": "Replace submitted file",
+            "uploadProject": "Submit project",
+            "uploading": "Uploading…",
+            "feedback": "Jury feedback",
+            "unavailable": "The organizers have not published the test and project brief yet.",
+            "denied": "You do not currently have access to these materials.",
+            "failed": "The request could not be completed. Refresh your submission status and try again.",
+            "fileError": "Choose a non-empty ZIP or PDF file up to 20 MiB.",
+            "conflict": "Your submission status has changed. Refresh it before trying again."
+        },
         "scoring": {
             "visible": "Final scores visible",
             "visibleDescription": "Final scores and final leaderboards are visible throughout this competition."
@@ -1239,6 +1267,7 @@
                 "recoveryDescription": "If you experience internet connectivity issues after the competition ends, simply re-open the MLCompete Companion App. This will automatically restore your normal internet access."
             },
             "tabs": {
+                "hybrid": "Test and project",
                 "description": "Description",
                 "rules": "Rules",
                 "problems": "Problems",
@@ -1257,7 +1286,10 @@
                 "saveSuccess": "Recording link saved successfully",
                 "saveError": "Failed to save recording link"
             },
+            "hybridCountdown": "Less than 10 minutes remain. Check that you have submitted your test and project.",
             "finishEarly": {
+                "hybridDescription": "Finishing early closes your test, project upload and practical submissions. Check that you have submitted all your work.",
+                "hybridConfirm": "Finish your participation now? You can view your work again once the competition ends.",
                 "title": "Finish Competition Early",
                 "description": "If you have finished all problems and want to complete your session, you can do so here. Once you finish, you will no longer be able to submit solutions or view the problems until the competition ends.",
                 "button": "Finish competition early",
@@ -1308,6 +1340,53 @@
             "title": "Latest competitions",
             "subtitle": "Explore latest machine learning competitions",
             "viewAll": "View all competitions"
+        }
+    },
+    "competitionSeries": {
+        "eyebrow": "Competition series",
+        "metadataDescription": "Follow every event and result in {name}.",
+        "modes": {
+            "multiRound": "Multi-round",
+            "divisions": "Divisions"
+        },
+        "tabs": {
+            "overview": "Overview",
+            "children": "Rounds and divisions",
+            "combined": "Combined leaderboard"
+        },
+        "period": "Overall date range",
+        "periodHint": "Calculated automatically from the earliest event start and latest event end.",
+        "starts": "Starts",
+        "ends": "Ends",
+        "events": "{count, plural, one {# event} other {# events}}",
+        "problems": "{count, plural, one {# problem} other {# problems}}",
+        "roundLabel": "Round {number}",
+        "divisionLabel": "Division {number}",
+        "childrenTitle": "Competition schedule",
+        "childrenMultiRoundDescription": "Every round keeps its own date and time. Open it to join, solve its problems, or inspect its individual leaderboard.",
+        "childrenDivisionsDescription": "Choose the division that applies to you. Each division keeps its own competition and leaderboard.",
+        "viewCompetition": "Open competition",
+        "viewLeaderboard": "View leaderboard",
+        "openSeries": "Open competition series {name}",
+        "combinedTitle": "Combined leaderboard",
+        "combinedDescription": "Cumulative totals based on the scores currently visible in each round, with round and problem breakdowns.",
+        "childLeaderboardsTitle": "Event leaderboards",
+        "childLeaderboardsDescription": "A quick view of each event. Open the competition for the complete standings.",
+        "rank": "Rank",
+        "participant": "Participant",
+        "total": "Total",
+        "roundTotals": "Round totals",
+        "problemScores": "Problem scores",
+        "noResults": "No results have been published yet.",
+        "unavailable": "The combined leaderboard is not available yet.",
+        "errorTitle": "This competition series could not be loaded",
+        "errorDescription": "The series may be temporarily unavailable. Please try again.",
+        "retry": "Try again",
+        "loading": "Loading competition series",
+        "childBanner": {
+            "round": "Round {number}",
+            "division": "Division {number}",
+            "backToSeries": "Back to {name}"
         }
     },
     "roadmap": {

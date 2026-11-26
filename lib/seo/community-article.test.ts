@@ -135,6 +135,15 @@ describe('community article SEO', () => {
         const openGraphImage = Array.isArray(metadata.openGraph?.images)
             ? metadata.openGraph.images[0]
             : undefined;
+        const imageUrl =
+            typeof openGraphImage === 'object' && openGraphImage
+                ? new URL(openGraphImage.url)
+                : null;
+
+        expect(imageUrl?.searchParams.get('type')).toBe('article');
+        expect(imageUrl?.searchParams.get('articleKind')).toBe('PROBLEM_EDITORIAL');
+        expect(imageUrl?.searchParams.get('problemTitle')).toBe(source.problem?.title);
+        expect(imageUrl?.searchParams.get('v')).toBe('onia-og-2');
 
         expect(schema).toMatchObject({
             '@context': 'https://schema.org',

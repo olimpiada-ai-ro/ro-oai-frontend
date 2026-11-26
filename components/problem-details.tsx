@@ -1027,6 +1027,17 @@ export function ProblemDetails({
                                                                 <LeaderboardView
                                                                     leaderboard={leaderboard}
                                                                     simple
+                                                                    identitySurface={
+                                                                        problem.competitionType ===
+                                                                            'CLASSIC' ||
+                                                                        problem.competitionType ===
+                                                                            'HYBRID'
+                                                                            ? 'RESTRICTED_COMPETITION_LEADERBOARD'
+                                                                            : problem.competitionType ===
+                                                                                'CASUAL'
+                                                                              ? 'CASUAL_COMPETITION_LEADERBOARD'
+                                                                              : 'PROBLEM_LEADERBOARD'
+                                                                    }
                                                                     showMetric={
                                                                         problem.metricPreference !==
                                                                         'FASTER_SUBMISSION_IS_BETTER'

@@ -10,6 +10,7 @@ import { fetchPublicApi } from '@/lib/public-api';
 import { generateLeaderboardMetadata } from '@/lib/seo/page-metadata';
 import { generateItemListSchema } from '@/lib/seo/structured-data';
 import type { GenericLeaderboardEntry } from '@/lib/types';
+import type { Locale } from '@/lib/types';
 
 /**
  * Generate metadata for leaderboard page.
@@ -34,11 +35,14 @@ type LeaderboardResult = {
     failed: boolean;
 };
 
-async function getGeneralLeaderboard(): Promise<LeaderboardResult> {
+async function getGeneralLeaderboard(locale: Locale): Promise<LeaderboardResult> {
     try {
         const response = await fetchPublicApi(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/leaderboard`,
-            { next: { revalidate: 30 } },
+            {
+                headers: { 'accept-language': locale },
+                next: { revalidate: 30 },
+            },
         );
 
         if (!response.ok) {
@@ -58,9 +62,9 @@ async function getGeneralLeaderboard(): Promise<LeaderboardResult> {
 }
 
 export default async function LeaderboardPage() {
-    const [{ entries, failed }, locale, t, tRankings] = await Promise.all([
-        getGeneralLeaderboard(),
-        getServerLocale(),
+    const locale = await getServerLocale();
+    const [{ entries, failed }, t, tRankings] = await Promise.all([
+        getGeneralLeaderboard(locale),
         getTranslations('leaderboard'),
         getTranslations('rankings'),
     ]);

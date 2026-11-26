@@ -7,6 +7,7 @@ import type { CompetitionType } from '@/lib/types';
 
 const messages = {
     competitions: {
+        hybrid: { format: 'Theory test + project' },
         scoring: {
             visible: 'Final scores visible',
             visibleDescription:
@@ -32,6 +33,12 @@ describe('CompetitionScoringBadge', () => {
                 'Final scores and final leaderboards are visible throughout this competition.',
             ).textContent,
         ).toContain('Final scores visible');
+    });
+
+    it('identifies the hybrid format without promising live scores', () => {
+        renderBadge('HYBRID');
+        expect(screen.getByLabelText('Theory test + project')).toBeTruthy();
+        expect(screen.queryByText('Final scores visible')).toBeNull();
     });
 
     it('does not imply score visibility for classic or rolling legacy responses', () => {

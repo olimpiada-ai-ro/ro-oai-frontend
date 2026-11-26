@@ -13,6 +13,7 @@ import {
 import { useSession } from 'next-auth/react';
 
 import { fetchApi } from '@/lib/api';
+import { limitProfileBio } from '@/lib/profile-bio';
 import type { UserProfileSettingsResponse } from '@/lib/types';
 
 export type CurrentUserProfileStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -104,7 +105,10 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
 
             if (requestId !== activeRequestRef.current) return;
 
-            setUser(data);
+            setUser({
+                ...data,
+                bio: limitProfileBio(data.bio) ?? undefined,
+            });
             setProfileAccountId(sessionId);
             setProfileStatus('ready');
         } catch (requestError) {

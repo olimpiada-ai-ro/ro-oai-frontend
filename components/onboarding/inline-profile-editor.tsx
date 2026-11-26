@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, Loader2, RefreshCw, Save, X } from 'lucide-react';
 import { UserProfile, Country } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { limitProfileBio, PROFILE_BIO_MAX_LENGTH } from '@/lib/profile-bio';
 import { CountrySelector } from '@/components/country-selector';
 import { fetchApi } from '@/lib/api';
 import {
@@ -32,7 +33,7 @@ export function InlineProfileEditor({ userProfile, onSave, onCancel }: InlinePro
         username: userProfile.username || '',
         firstName: userProfile.firstName || '',
         lastName: userProfile.lastName || '',
-        bio: userProfile.bio || '',
+        bio: limitProfileBio(userProfile.bio) || '',
         location: userProfile.location || '',
         countryCode: userProfile.country?.code || null,
     });
@@ -122,7 +123,7 @@ export function InlineProfileEditor({ userProfile, onSave, onCancel }: InlinePro
 
         if (missingFields.includes('bio')) {
             newErrors.bio = requiredMessage(t('fields.bio'));
-        } else if (formData.bio.length > 500) {
+        } else if (formData.bio.length > PROFILE_BIO_MAX_LENGTH) {
             newErrors.bio =
                 locale === 'ro'
                     ? 'Descrierea trebuie să aibă cel mult 500 de caractere.'
@@ -294,7 +295,7 @@ export function InlineProfileEditor({ userProfile, onSave, onCancel }: InlinePro
                         )}
                         aria-invalid={!!errors.bio}
                         aria-describedby={errors.bio ? 'bio-error' : undefined}
-                        maxLength={500}
+                        maxLength={PROFILE_BIO_MAX_LENGTH}
                     />
                     <div className="flex justify-between items-center">
                         {errors.bio ? (
@@ -303,7 +304,7 @@ export function InlineProfileEditor({ userProfile, onSave, onCancel }: InlinePro
                             </p>
                         ) : (
                             <span className="text-xs text-muted-foreground">
-                                {formData.bio.length}/500
+                                {formData.bio.length}/{PROFILE_BIO_MAX_LENGTH}
                             </span>
                         )}
                     </div>

@@ -105,7 +105,11 @@ describe('Competition OG Image URL Property Tests', () => {
                         // Parse the URL and verify the title parameter
                         const urlObj = new URL(url);
                         const titleParam = urlObj.searchParams.get('title');
-                        expect(titleParam).toBe(name);
+                        expect(titleParam).toBe(
+                            Array.from(name.normalize('NFC').trim().replace(/\s+/g, ' '))
+                                .slice(0, 96)
+                                .join(''),
+                        );
                     },
                 ),
                 { numRuns: 100 },

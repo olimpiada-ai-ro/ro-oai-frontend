@@ -29,6 +29,7 @@ function CurrentUserProbe() {
             <span data-testid="auth-status">{context.status}</span>
             <span data-testid="profile-status">{context.profileStatus}</span>
             <span data-testid="user-id">{context.user?.userId ?? 'none'}</span>
+            <span data-testid="bio-length">{context.user?.bio?.length ?? 0}</span>
             <span data-testid="error">{context.error ?? 'none'}</span>
         </div>
     );
@@ -36,7 +37,7 @@ function CurrentUserProbe() {
 
 function response(
     status: number,
-    body?: { userId: string; username: string; email: string },
+    body?: { userId: string; username: string; email: string; bio?: string },
 ): Pick<Response, 'ok' | 'status' | 'json'> {
     return {
         ok: status >= 200 && status < 300,
@@ -104,5 +105,29 @@ describe('CurrentUserProvider', () => {
         );
 
         await waitFor(() => expect(screen.getByTestId('user-id').textContent).toBe('account-b'));
+    });
+
+    it('bounds an oversized legacy biography before exposing it to the UI', async () => {
+        mocks.session.current = {
+            data: { id: 'account-a', accessToken: 'token' },
+            status: 'authenticated',
+        };
+        mocks.fetchApi.mockResolvedValue(
+            response(200, {
+                userId: 'account-a',
+                username: 'alpha',
+                email: 'a@example.com',
+                bio: 'a'.repeat(50_000),
+            }),
+        );
+
+        render(
+            <CurrentUserProvider>
+                <CurrentUserProbe />
+            </CurrentUserProvider>,
+        );
+
+        await waitFor(() => expect(screen.getByTestId('profile-status').textContent).toBe('ready'));
+        expect(screen.getByTestId('bio-length').textContent).toBe('500');
     });
 });

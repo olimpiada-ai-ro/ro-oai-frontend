@@ -39,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SubmissionDetailsModal } from '@/components/submission-details-modal';
 import { UserAvatar } from '@/components/user-avatar';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 import { Link } from '@/i18n/routing';
 import { analytics, AnalyticsEvents } from '@/lib/analytics';
 import { updateShowcase } from '@/lib/api';
@@ -59,6 +60,7 @@ import type {
 } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useGTMTracker } from '@/hooks/use-gtm-tracker';
+import { limitProfileBio } from '@/lib/profile-bio';
 import type { ArticleSummary } from '@/lib/articles';
 import type { ProfilePublishedProblem } from '@/lib/profile-published-problems';
 
@@ -217,15 +219,24 @@ export function ProfileView({
     }
 
     const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
-    const headerDescription = profile.bio || t('joinedAt', { date: formatDate(profile.joinedAt) });
+    const headerDescription =
+        limitProfileBio(profile.bio) || t('joinedAt', { date: formatDate(profile.joinedAt) });
 
     return (
         <PlatformPageShell contentClassName="space-y-8 md:space-y-10">
             <PlatformPageHeader
                 eyebrow={t('title')}
                 icon={CircleUserRound}
-                title={<span dir="auto">{profile.username}</span>}
-                description={headerDescription}
+                title={
+                    <UserIdentityPresentation
+                        surface="PROFILE"
+                        layout="stacked"
+                        identityPresentation={profile.identityPresentation}
+                        username={<span dir="auto">{profile.username}</span>}
+                        titleClassName="mt-1 text-xs sm:text-sm"
+                    />
+                }
+                description={<span className="whitespace-pre-wrap">{headerDescription}</span>}
                 aside={
                     <div className="platform-panel flex w-full min-w-0 items-center gap-4 bg-[var(--platform-paper)] p-3 sm:w-auto sm:min-w-80 sm:p-4">
                         <UserAvatar

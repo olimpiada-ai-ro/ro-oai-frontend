@@ -27,6 +27,22 @@ describe('ProblemAuthors', () => {
                             firstName: 'Pixel',
                             lastName: 'Testerson',
                             displayName: 'Pixel Testerson',
+                            identityPresentation: {
+                                title: {
+                                    id: 2026,
+                                    code: 'IOAI_2026_GOLD',
+                                    name: 'IOAI 2026 Champion',
+                                    prefixEmoji: 'GOLD_MEDAL',
+                                    color: 'GOLD',
+                                    font: 'DISPLAY',
+                                    effect: 'GLITTER',
+                                },
+                                usernameStyle: {
+                                    color: 'GOLD',
+                                    font: 'DEFAULT',
+                                    effect: 'GLOW',
+                                },
+                            },
                         },
                         {
                             userId: null,
@@ -45,6 +61,7 @@ describe('ProblemAuthors', () => {
             '/profile/pixel-testerson',
         );
         expect(screen.getByText('Ana Popescu')).toBeInTheDocument();
+        expect(screen.getByText('IOAI 2026 Champion')).toBeInTheDocument();
         expect(screen.queryByText('Legacy Author')).not.toBeInTheDocument();
     });
 });

@@ -9,7 +9,7 @@ import {
     SITE_CONFIG,
     SUPPORTED_LOCALES,
     TWITTER_DEFAULTS,
-    generateGenericOgImageUrl,
+    generateArticleOgImageUrl,
     getOgLocale,
 } from '@/lib/seo/config';
 import type { Locale } from '@/lib/types';
@@ -63,11 +63,21 @@ export function getCommunityArticleCanonicalUrl(article: ArticleDetail): string 
     return `${BASE_URL}/${article.language}/articles/${encodeURIComponent(article.slug)}`;
 }
 
-export function getCommunityArticleImageUrl(article: ArticleDetail): string {
-    return generateGenericOgImageUrl(
-        compactText(article.title, 90),
-        compactText(article.excerpt, 180),
-    );
+export function getCommunityArticleImageUrl(
+    article: ArticleDetail,
+    labels?: CommunityArticleSeoLabels,
+): string {
+    const authorLine = article.authors
+        .map((author) => getArticleAuthorName(author, labels?.authorFallback || 'Author'))
+        .join(', ');
+
+    return generateArticleOgImageUrl(compactText(article.title, 90), {
+        excerpt: compactText(article.excerpt, 180),
+        kind: article.kind === 'PROBLEM_EDITORIAL' ? 'PROBLEM_EDITORIAL' : 'ARTICLE',
+        problemTitle: article.problem?.title,
+        authorLine: authorLine ? `By ${authorLine}` : undefined,
+        revision: article.updatedAt || article.publishedAt || String(article.id),
+    });
 }
 
 export function generateCommunityArticleMetadata(
@@ -75,7 +85,7 @@ export function generateCommunityArticleMetadata(
     labels: CommunityArticleSeoLabels,
 ): Metadata {
     const canonical = getCommunityArticleCanonicalUrl(article);
-    const image = getCommunityArticleImageUrl(article);
+    const image = getCommunityArticleImageUrl(article, labels);
     const title = compactText(article.title, 65);
     const description = compactText(article.excerpt, 160);
     const section = articleSection(article, labels);
@@ -158,7 +168,7 @@ export function generateCommunityArticleSchema(
     labels: CommunityArticleSeoLabels,
 ) {
     const canonical = getCommunityArticleCanonicalUrl(article);
-    const image = getCommunityArticleImageUrl(article);
+    const image = getCommunityArticleImageUrl(article, labels);
     const section = articleSection(article, labels);
     const { published, modified } = articleDates(article);
     const authors = article.authors.map((author, index) => ({

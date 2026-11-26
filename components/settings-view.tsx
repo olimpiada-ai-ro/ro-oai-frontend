@@ -62,6 +62,7 @@ import { useGTMTracker } from '@/hooks/use-gtm-tracker';
 import { Link } from '@/i18n/routing';
 import { fetchApi } from '@/lib/api';
 import { platformSans } from '@/lib/platform-fonts';
+import { limitProfileBio, PROFILE_BIO_MAX_LENGTH } from '@/lib/profile-bio';
 import { isUsernameSlugFriendly, toProfileSlug } from '@/lib/profile-utils';
 import type {
     Country,
@@ -83,6 +84,7 @@ const primaryButtonClassName =
 
 const SETTINGS_DRAFT_VERSION = 1;
 const SETTINGS_DRAFT_PREFIX = 'mlcompete:settings-draft:';
+const MAX_SETTINGS_DRAFT_STORAGE_LENGTH = 128_000;
 
 function settingsDraftKey(accountId: string) {
     return `${SETTINGS_DRAFT_PREFIX}${accountId}`;
@@ -92,6 +94,10 @@ function readSettingsDraft(accountId: string): Partial<UserProfileSettingsUpdate
     try {
         const stored = window.sessionStorage.getItem(settingsDraftKey(accountId));
         if (!stored) return null;
+        if (stored.length > MAX_SETTINGS_DRAFT_STORAGE_LENGTH) {
+            clearSettingsDraft(accountId);
+            return null;
+        }
 
         const parsed: unknown = JSON.parse(stored);
         if (
@@ -108,7 +114,16 @@ function readSettingsDraft(accountId: string): Partial<UserProfileSettingsUpdate
             return null;
         }
 
-        return parsed.form as Partial<UserProfileSettingsUpdateRequest>;
+        const parsedForm = parsed.form as Partial<UserProfileSettingsUpdateRequest>;
+        if (parsedForm.bio !== undefined && typeof parsedForm.bio !== 'string') {
+            clearSettingsDraft(accountId);
+            return null;
+        }
+
+        return {
+            ...parsedForm,
+            ...(parsedForm.bio === undefined ? {} : { bio: limitProfileBio(parsedForm.bio) ?? '' }),
+        };
     } catch {
         clearSettingsDraft(accountId);
         return null;
@@ -517,7 +532,10 @@ export function SettingsView() {
             if (formAccountId && formAccountId !== sessionId) {
                 clearSettingsDraft(formAccountId);
             }
-            const initialForm = { ...user };
+            const initialForm = {
+                ...user,
+                bio: limitProfileBio(user.bio) ?? '',
+            };
             initialFormRef.current = initialForm;
             const draft = readSettingsDraft(sessionId);
             setForm(draft ? { ...initialForm, ...draft } : initialForm);
@@ -1232,7 +1250,15 @@ export function SettingsView() {
                                             updateForm({ bio: event.target.value })
                                         }
                                         rows={4}
+                                        maxLength={PROFILE_BIO_MAX_LENGTH}
+                                        aria-describedby="bio-character-count"
                                     />
+                                    <p
+                                        id="bio-character-count"
+                                        className="text-end text-xs tabular-nums text-[var(--platform-ink-muted)]"
+                                    >
+                                        {(form.bio || '').length}/{PROFILE_BIO_MAX_LENGTH}
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">

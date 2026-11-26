@@ -18,6 +18,8 @@ export {
     ENVIRONMENT,
     SUPPORTED_LOCALES,
     DEFAULT_LOCALE,
+    PLATFORM_OG_VERSION,
+    OG_IMAGE_DIMENSIONS,
     getFullUrl,
     isTitleValid,
     isDescriptionValid,
@@ -27,11 +29,20 @@ export {
     getLocalizedUrl,
     isProduction,
     isDevelopment,
+    generateHomeOgImageUrl,
     generateProblemOgImageUrl,
     generateProfileOgImageUrl,
     generateGenericOgImageUrl,
+    generatePlatformOgImageUrl,
+    generateArticleOgImageUrl,
+    generateInstitutionOgImageUrl,
+    generateCountyOgImageUrl,
+    generateCountryOgImageUrl,
+    generateCompetitionOgImageUrl,
     getFallbackOgImageUrl,
 } from './config';
+
+export type { PlatformOgKind } from './config';
 
 // Metadata Generation
 export { generateMetadata, validateMetadataConfig, mergeMetadataConfig } from './metadata';

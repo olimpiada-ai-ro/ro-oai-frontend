@@ -312,6 +312,21 @@ describe('JSON-LD Validity and Sanitization Property Tests', () => {
             expect(serialized).toContain('\\u003c/script >');
             expect(JSON.parse(serialized).name).toContain('</script >');
         });
+
+        it('sanitizes large unmatched script prefixes in linear time', () => {
+            const schema = {
+                '@context': 'https://schema.org',
+                '@type': 'Person',
+                description: '<script '.repeat(12_500),
+            };
+            const startedAt = performance.now();
+
+            const serialized = serializeStructuredData(schema);
+
+            expect(performance.now() - startedAt).toBeLessThan(1_000);
+            expect(serialized).not.toMatch(/<script/i);
+            expect(() => JSON.parse(serialized)).not.toThrow();
+        });
     });
 
     describe('Integration with Schema Generators', () => {

@@ -5,6 +5,7 @@
  * contract is final. UI components should import from `@/lib/articles` only.
  */
 
+import type { IdentityPresentation } from '@/lib/identity-presentation';
 import type { Locale, ProblemAuthor } from '@/lib/types';
 
 export type ArticleKind = 'GENERAL' | 'PROBLEM_EDITORIAL';
@@ -32,6 +33,7 @@ export type ArticleAuthor = {
     role?: string | null;
     displayOrder?: number;
     isProblemAuthor?: boolean;
+    identityPresentation?: IdentityPresentation | null;
 };
 
 export type ArticleProblemReference = {

@@ -16,7 +16,12 @@ import {
     ArticleSchema,
     ImageObjectSchema,
 } from './types';
-import { SITE_CONFIG, BASE_URL, ORGANIZATION_CONFIG } from './config';
+import {
+    SITE_CONFIG,
+    BASE_URL,
+    ORGANIZATION_CONFIG,
+    generateCompetitionOgImageUrl,
+} from './config';
 import type {
     Problem,
     UserProfile,
@@ -25,6 +30,7 @@ import type {
 } from '@/lib/types';
 import { getProblemAuthors } from '@/lib/problem-authors';
 import { getProfileUrl } from '@/lib/profile-utils';
+import { limitProfileBio } from '@/lib/profile-bio';
 import { getUsableAvatarUrl, getUserDisplayName } from '@/lib/user-identity';
 
 const EXPIRING_IMAGE_QUERY_PARAMETERS = new Set([
@@ -336,6 +342,10 @@ export function generateCompetitionSchema(
     // Get localized name and description
     const name = getLocalizedCompetitionField(competition, 'name', locale);
     const description = getLocalizedCompetitionField(competition, 'description', locale);
+    const now = Date.now();
+    const startTimestamp = Date.parse(competition.startTime);
+    const endTimestamp = Date.parse(competition.endTime);
+    const ogStatus = now < startTimestamp ? 'UPCOMING' : now > endTimestamp ? 'ENDED' : 'ACTIVE';
 
     return {
         '@context': 'https://schema.org',
@@ -355,7 +365,10 @@ export function generateCompetitionSchema(
             name: ORGANIZATION_CONFIG.name,
             url: ORGANIZATION_CONFIG.url,
         },
-        image: `${BASE_URL}/og-image.png`,
+        image: generateCompetitionOgImageUrl(name, ogStatus, {
+            start: competition.startTime,
+            end: competition.endTime,
+        }),
         offers: {
             '@type': 'Offer',
             price: '0',
@@ -570,7 +583,9 @@ export function generatePersonSchema(profile: UserProfile, locale: string = 'en'
         alternateName: publicName !== profile.username ? profile.username : undefined,
         url: profileUrl,
         image: avatarUrl,
-        description: profile.bio || `${publicName} - Machine Learning Competitor on MLCompete`,
+        description:
+            limitProfileBio(profile.bio) ||
+            `${publicName} - Machine Learning Competitor on MLCompete`,
         sameAs: sameAs.length > 0 ? sameAs : undefined,
     };
 }
@@ -758,23 +773,17 @@ export function sanitizeStructuredData(data: object): object {
     // Deep clone to avoid mutating original
     const sanitized = JSON.parse(JSON.stringify(data));
 
-    // Patterns for dangerous content
+    // Keep every expression bounded. Structured data can include authored
+    // content, so patterns that scan until a distant closing tag can turn a
+    // repeated, unmatched `<script ` sequence into quadratic work.
     const dangerousPatterns = [
-        // Script tags (including variations)
-        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-        /<script[^>]*>/gi,
+        /<script\b/gi,
         /<\/script>/gi,
-        // JavaScript URLs
         /javascript\s*:/gi,
-        // VBScript URLs (for IE compatibility)
         /vbscript\s*:/gi,
-        // Data URLs that could contain scripts
         /data\s*:\s*text\/html/gi,
-        // Event handlers (onclick, onerror, onload, etc.)
         /\bon\w+\s*=/gi,
-        // Expression in CSS (IE specific)
         /expression\s*\(/gi,
-        // HTML entities that could be used for XSS
         /&#x?[0-9a-f]+;?/gi,
     ];
 
@@ -783,15 +792,12 @@ export function sanitizeStructuredData(data: object): object {
      */
     const sanitizeValue = (value: unknown): unknown => {
         if (typeof value === 'string') {
-            let sanitizedString = value;
+            let sanitizedString = value.replace(/\s+/g, ' ').trim();
 
             // Apply all dangerous pattern removals
             for (const pattern of dangerousPatterns) {
                 sanitizedString = sanitizedString.replace(pattern, '');
             }
-
-            // Trim excessive whitespace that might result from removals
-            sanitizedString = sanitizedString.replace(/\s+/g, ' ').trim();
 
             // If the string became empty after sanitization, return empty string
             // This prevents null/undefined issues

@@ -1,3 +1,5 @@
+import type { IdentityPresentation } from '@/lib/identity-presentation';
+
 export type Page<T> = {
     content: T[];
     page: {
@@ -72,6 +74,7 @@ export type ProblemAuthor = {
     username?: string | null;
     avatar?: string | null;
     displayOrder?: number;
+    identityPresentation?: IdentityPresentation | null;
 };
 
 /**
@@ -219,6 +222,7 @@ export type SimpleLeaderboardEntry = {
     avatar?: string | null;
     problemScores?: Record<number, number>;
     country?: Country; // Inherited from institution
+    identityPresentation?: IdentityPresentation | null;
 };
 
 export type GenericLeaderboardEntry = {
@@ -237,9 +241,18 @@ export type GenericLeaderboardEntry = {
     country?: Country; // Inherited from institution
     level?: number; // User's level (1-50)
     tier?: string; // User's level tier (NOVICE, APPRENTICE, EXPERT, MASTER, LEGEND)
+    identityPresentation?: IdentityPresentation | null;
 };
 
-export type CompetitionType = 'CLASSIC' | 'CASUAL';
+export type CompetitionType = 'CLASSIC' | 'CASUAL' | 'HYBRID';
+
+export type CompetitionSeriesMode = 'MULTI_ROUND' | 'DIVISIONS';
+
+export type CompetitionSeriesParentSummary = {
+    id: number;
+    name: string;
+    mode: CompetitionSeriesMode;
+};
 
 export type CompetitionUserListResponse = {
     id: number;
@@ -252,6 +265,8 @@ export type CompetitionUserListResponse = {
     highlighted: boolean;
     antiCheatEnabled?: boolean;
     parentCompetitionId?: number | null;
+    parentSeries?: CompetitionSeriesParentSummary | null;
+    seriesPosition?: number | null;
     disabled?: boolean;
     disqualified?: boolean;
     // English translation fields (optional)
@@ -280,6 +295,8 @@ export type CompetitionUserResponse = {
     startTime: string;
     endTime: string;
     competitionType: CompetitionType;
+    parentSeries?: CompetitionSeriesParentSummary | null;
+    seriesPosition?: number | null;
     joined: boolean;
     problems: Problem[];
     rules: string;
@@ -397,6 +414,7 @@ export type UserProfile = {
     institutionJoinedAt?: Date;
     onboardingDismissed?: boolean;
     country?: Country; // Inherited from institution
+    identityPresentation?: IdentityPresentation | null;
 };
 
 export type UserProfileSettingsResponse = {
@@ -980,6 +998,7 @@ export type EditorialAuthorResponse = {
     competitionRank?: number;
     role: string;
     hasSourceCode: boolean;
+    identityPresentation?: IdentityPresentation | null;
 };
 
 export type FeaturedSolutionResponse = {
@@ -1073,6 +1092,7 @@ export type AchievementLeaderboardEntry = {
     totalXp: number;
     level?: number;
     tier?: string;
+    identityPresentation?: IdentityPresentation | null;
 };
 
 export type PaginatedAchievementLeaderboardResponse = {

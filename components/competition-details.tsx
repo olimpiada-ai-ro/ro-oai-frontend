@@ -39,6 +39,8 @@ import {
     UserCircle,
     FileDown,
     Trophy,
+    ArrowUpRight,
+    Layers3,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -111,6 +113,10 @@ function useCompetitionBoundaryTime(startTime: string, endTime: string): number 
 
     return nowMs;
 }
+
+const HybridCompetitionPanel = dynamic(() =>
+    import('@/components/hybrid-competition-panel').then((mod) => mod.HybridCompetitionPanel),
+);
 
 const SelectedSubmissionsModal = dynamic(
     () =>
@@ -443,7 +449,10 @@ function TabsInner({
         leaderboard.partialLeaderboard !== null && leaderboard.partialLeaderboard.length > 0;
     const hasFinalLeaderboard =
         leaderboard.completeLeaderboard !== null && leaderboard.completeLeaderboard.length > 0;
-    const requiresSubmissionSelection = !hasLiveFinalScores(competition.competitionType);
+    const isHybrid = competition.competitionType === 'HYBRID';
+    const requiresSubmissionSelection =
+        !hasLiveFinalScores(competition.competitionType) &&
+        (!isHybrid || problems.length > 0 || competition.submissionSelectionNotAcknowledged);
 
     // Disqualification status - show banner only during ongoing competition
     const isDisqualified = competition.disqualified === true;
@@ -492,9 +501,29 @@ function TabsInner({
     const activeTabTriggerRef = useRef<HTMLButtonElement>(null);
     const hasPositionedInitialTabRef = useRef(false);
 
+    const requiresEntryChecks = !!(
+        competition.submissionSelectionNotAcknowledged || competition.sessionNotOk
+    );
+    const showProblemTab =
+        (showProblems || needsRefresh) &&
+        (!isHybrid || problems.length > 0 || (isOngoing && (needsRefresh || requiresEntryChecks)));
+    const showHybridTab =
+        isHybrid &&
+        competition.joined &&
+        !isDisqualified &&
+        (hasEnded ||
+            (isOngoing &&
+                !needsRefresh &&
+                !competition.sessionNotOk &&
+                !(
+                    competition.validationRequired && competition.submissionSelectionNotAcknowledged
+                ) &&
+                !connection?.isFinished));
+
     const { availableTabs, defaultTab } = useMemo(() => {
         const tabs: string[] = ['description', 'rules'];
-        if (showProblems || needsRefresh) tabs.push('problems');
+        if (showHybridTab) tabs.push('hybrid');
+        if (showProblemTab) tabs.push('problems');
         if (hasPartialLeaderboard) tabs.push('partial');
         if (hasFinalLeaderboard) tabs.push('final');
         if (showRecordingTab) tabs.push('recording');
@@ -503,8 +532,8 @@ function TabsInner({
         if (showFinishEarly) tabs.push('finish');
         return { availableTabs: tabs, defaultTab: 'description' as const };
     }, [
-        showProblems,
-        needsRefresh,
+        showHybridTab,
+        showProblemTab,
         hasPartialLeaderboard,
         hasFinalLeaderboard,
         showRecordingTab,
@@ -735,7 +764,16 @@ function TabsInner({
                     >
                         {t('tabs.rules')}
                     </TabsTrigger>
-                    {(showProblems || needsRefresh) && (
+                    {showHybridTab && (
+                        <TabsTrigger
+                            ref={activeTab === 'hybrid' ? activeTabTriggerRef : undefined}
+                            value="hybrid"
+                            className={tabTriggerClass}
+                        >
+                            {t('tabs.hybrid')}
+                        </TabsTrigger>
+                    )}
+                    {showProblemTab && (
                         <TabsTrigger
                             ref={activeTab === 'problems' ? activeTabTriggerRef : undefined}
                             value="problems"
@@ -808,6 +846,11 @@ function TabsInner({
                         problems={problems}
                         simple={true}
                         isLoading={false}
+                        identitySurface={
+                            competition.competitionType === 'CASUAL'
+                                ? 'CASUAL_COMPETITION_LEADERBOARD'
+                                : 'RESTRICTED_COMPETITION_LEADERBOARD'
+                        }
                     />
                 </TabsContent>
             )}
@@ -819,11 +862,36 @@ function TabsInner({
                         showAwardRank={competition.showAwardRank}
                         simple={true}
                         isLoading={false}
+                        identitySurface={
+                            competition.competitionType === 'CASUAL'
+                                ? 'CASUAL_COMPETITION_LEADERBOARD'
+                                : 'RESTRICTED_COMPETITION_LEADERBOARD'
+                        }
                     />
                 </TabsContent>
             )}
 
-            {(showProblems || needsRefresh) && (
+            {showHybridTab && (
+                <TabsContent
+                    value="hybrid"
+                    className="mt-6"
+                    forceMount
+                    hidden={activeTab !== 'hybrid'}
+                >
+                    <HybridCompetitionPanel
+                        key={competition.id}
+                        competitionId={competition.id}
+                        readOnly={!isOngoing}
+                        onEntryCheck={
+                            competition.submissionSelectionNotAcknowledged && isOngoing
+                                ? () => handleTabChange('problems')
+                                : undefined
+                        }
+                    />
+                </TabsContent>
+            )}
+
+            {showProblemTab && (
                 <TabsContent value="problems" className="mt-6">
                     {showDisqualificationBanner && (
                         <DisqualificationBanner
@@ -1055,7 +1123,9 @@ function TabsInner({
 
             {showFinishEarly && (
                 <TabsContent value="finish" className="mt-6 space-y-6">
-                    <DismissibleAlert message={t('finishTabAlert')} dismissible={false} />
+                    {(!isHybrid || problems.length > 0) && (
+                        <DismissibleAlert message={t('finishTabAlert')} dismissible={false} />
+                    )}
 
                     <div className="platform-panel flex flex-col items-center space-y-6 p-6 text-center sm:p-8">
                         <div className="flex h-14 w-14 items-center justify-center bg-[var(--platform-coral)] text-[var(--platform-on-accent)] shadow-[4px_4px_0_var(--platform-violet)]">
@@ -1064,7 +1134,11 @@ function TabsInner({
                         <div className="max-w-xl space-y-2">
                             <h3 className="text-xl font-bold">{t('finishEarly.title')}</h3>
                             <p className="text-[var(--platform-ink-muted)]">
-                                {t('finishEarly.description')}
+                                {t(
+                                    isHybrid
+                                        ? 'finishEarly.hybridDescription'
+                                        : 'finishEarly.description',
+                                )}
                             </p>
                         </div>
                         <Button
@@ -1091,7 +1165,11 @@ function TabsInner({
                                     {t('finishEarly.confirmTitle')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {t('finishEarly.confirmDescription')}
+                                    {t(
+                                        isHybrid
+                                            ? 'finishEarly.hybridConfirm'
+                                            : 'finishEarly.confirmDescription',
+                                    )}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -1214,6 +1292,7 @@ export function CompetitionDetails({
 }: CompetitionDetailsProps) {
     const t = useTranslations('competitions.details');
     const tList = useTranslations('competitions.list');
+    const tSeries = useTranslations('competitionSeries.childBanner');
     const { trackCompetition } = useGTMTracker();
     const { locale } = useLocale();
     const { addDisqualifiedCompetition } = useDisqualificationNotifications();
@@ -1343,9 +1422,37 @@ export function CompetitionDetails({
             {isOngoing && competition.joined && (
                 <CompetitionWaringDisplay
                     endTime={competition.endTime}
+                    hybrid={competition.competitionType === 'HYBRID'}
                     storageKey={`dismissed_countdown_${competition.id}`}
                 />
             )}
+            {competition.parentSeries ? (
+                <Link
+                    href={`/competition-series/${competition.parentSeries.id}`}
+                    className="group mb-6 flex min-h-14 items-center gap-3 border border-[var(--platform-line-strong)] bg-[var(--platform-paper-strong)] px-4 py-3 text-[var(--platform-ink)] outline-none transition-colors hover:border-[var(--platform-violet)] focus-visible:border-[var(--platform-violet)] sm:px-5"
+                >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--platform-violet)] text-[var(--platform-paper)]">
+                        <Layers3 className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-bold uppercase tracking-[0.08em] text-[var(--platform-ink-muted)]">
+                            {tSeries(
+                                competition.parentSeries.mode === 'DIVISIONS'
+                                    ? 'division'
+                                    : 'round',
+                                { number: (competition.seriesPosition ?? 0) + 1 },
+                            )}
+                        </span>
+                        <span className="mt-0.5 block truncate text-sm font-semibold group-hover:text-[var(--platform-violet)]">
+                            {tSeries('backToSeries', { name: competition.parentSeries.name })}
+                        </span>
+                    </span>
+                    <ArrowUpRight
+                        className="h-5 w-5 shrink-0 text-[var(--platform-violet)] rtl:-rotate-90"
+                        aria-hidden="true"
+                    />
+                </Link>
+            ) : null}
             {setupNotice}
             <div className="space-y-8">
                 <div>
@@ -1477,21 +1584,24 @@ export function CompetitionDetails({
                     )}
                 </div>
             </div>
-            {!hasLiveFinalScores(competition.competitionType) && (
-                <SelectedSubmissionsModal
-                    competitionId={competition.id}
-                    competitionStartTime={competition.startTime}
-                    competitionEndTime={competition.endTime}
-                    forceOpen={forceOpenSelectedSubmissions}
-                    onClose={() => {
-                        setForceOpenSelectedSubmissions(false);
-                    }}
-                    onContinue={() => {
-                        setForceOpenSelectedSubmissions(false);
-                        setShowFinishConfirm(true);
-                    }}
-                />
-            )}
+            {!hasLiveFinalScores(competition.competitionType) &&
+                (competition.competitionType !== 'HYBRID' ||
+                    competition.problems.length > 0 ||
+                    forceOpenSelectedSubmissions) && (
+                    <SelectedSubmissionsModal
+                        competitionId={competition.id}
+                        competitionStartTime={competition.startTime}
+                        competitionEndTime={competition.endTime}
+                        forceOpen={forceOpenSelectedSubmissions}
+                        onClose={() => {
+                            setForceOpenSelectedSubmissions(false);
+                        }}
+                        onContinue={() => {
+                            setForceOpenSelectedSubmissions(false);
+                            setShowFinishConfirm(true);
+                        }}
+                    />
+                )}
         </PlatformPageShell>
     );
 }
