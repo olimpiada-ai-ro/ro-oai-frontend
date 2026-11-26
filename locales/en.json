@@ -1496,6 +1496,7 @@
         "dismissIndicator": "Dismiss profile completion reminder"
     },
     "join": {
+        "inviteLinkRequired": "To join this competition, open the invitation link from the organizer.",
         "registerFailedInitialMessage": "Registration failed. Please check your details and try again.",
         "registerFailedGenericMessage": "Unexpected error. Please try again later.",
         "participantId": "Participant ID",

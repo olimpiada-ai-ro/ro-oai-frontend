@@ -4,9 +4,12 @@ import {
     COMPETITION_INVITATION_REDEEM_COOKIE,
     competitionInvitationRedeemCookiePath,
     getCompetitionInvitationHandle,
+    isAllowedCompetitionInvitationOrigin,
     isCompetitionInvitationHandle,
 } from '@/lib/competition-hosting/invitation-session';
 import { getSession } from '@/lib/auth';
+import { registrationFields } from '@/lib/competition-registration';
+import type { RequiredFieldsUpdateRequest } from '@/lib/types';
 
 function apiError(status: number, errorCode: string, publicErrorMessage: string) {
     const response = NextResponse.json({ errorCode, publicErrorMessage }, { status });
@@ -23,7 +26,7 @@ export async function POST(
         return apiError(410, 'INVITATION_UNAVAILABLE', 'This invitation is no longer available');
     }
     const origin = request.headers.get('origin');
-    if (origin && origin !== request.nextUrl.origin) {
+    if (!isAllowedCompetitionInvitationOrigin(origin, request.nextUrl.origin)) {
         return apiError(403, 'INVALID_ORIGIN', 'The request origin is not allowed');
     }
     const token = request.cookies.get(COMPETITION_INVITATION_REDEEM_COOKIE)?.value;
@@ -40,11 +43,33 @@ export async function POST(
     }
     const requestBody = (await request.json().catch(() => null)) as {
         sharePersonalDataWithOrganizer?: unknown;
+        registration?: unknown;
     } | null;
     const sharePersonalDataWithOrganizer =
         typeof requestBody?.sharePersonalDataWithOrganizer === 'boolean'
             ? requestBody.sharePersonalDataWithOrganizer
             : undefined;
+
+    let registration: RequiredFieldsUpdateRequest | undefined;
+    if (requestBody?.registration !== undefined) {
+        if (
+            !requestBody.registration ||
+            typeof requestBody.registration !== 'object' ||
+            Array.isArray(requestBody.registration)
+        ) {
+            return apiError(400, 'INVALID_REGISTRATION', 'Invalid registration details');
+        }
+        const fields = requestBody.registration as Record<string, unknown>;
+        registration = {};
+        for (const field of registrationFields) {
+            const value = fields[field];
+            if (value === undefined) continue;
+            if (typeof value !== 'string' || value.length > 255) {
+                return apiError(400, 'INVALID_REGISTRATION', 'Invalid registration details');
+            }
+            registration[field] = value;
+        }
+    }
 
     const upstream = await fetch(
         new URL('/competition-invitations/accept', `${baseUrl.replace(/\/$/, '')}/`),
@@ -57,6 +82,7 @@ export async function POST(
             },
             body: JSON.stringify({
                 token,
+                registration,
                 ...(sharePersonalDataWithOrganizer === undefined
                     ? {}
                     : { sharePersonalDataWithOrganizer }),

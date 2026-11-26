@@ -12,16 +12,10 @@ import { OnboardingGate } from '@/components/anti-cheat/onboarding-gate';
 import { Link, useRouter } from '@/i18n/routing';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { RequiredFieldsUpdateRequest } from '@/lib/types';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { CompetitionRegistrationFields } from '@/components/competition-registration-fields';
 import { ArrowLeft, Trophy } from 'lucide-react';
 
-import { PlatformPageShell } from '@/components/platform-page-shell';
+import { PlatformPageShell, PlatformPageHeader } from '@/components/platform-page-shell';
 import { OrganizerDataConsentChoice } from '@/components/competition-organizer-data-consent';
 import type { CompetitionOrganizerDataConsent } from '@/lib/competition-hosting';
 
@@ -219,26 +213,24 @@ export function JoinCompetition({ competition, organizerDataConsent }: JoinCompe
         }
     }
 
+    const header = (
+        <PlatformPageHeader
+            title={competition.name}
+            eyebrow={t('title')}
+            icon={Trophy}
+            description={
+                competition.inviteLinkOnly
+                    ? t('inviteLinkRequired')
+                    : t('description', { name: competition.name })
+            }
+            aside={competition.antiCheatEnabled ? <AntiCheatBadge enabled size="md" /> : null}
+        />
+    );
+    if (competition.inviteLinkOnly)
+        return <PlatformPageShell contentClassName="max-w-5xl">{header}</PlatformPageShell>;
     return (
         <PlatformPageShell contentClassName="max-w-5xl">
-            <header className="platform-page-header">
-                <div className="min-w-0">
-                    <p className="platform-page-eyebrow">
-                        <Trophy className="h-4 w-4" aria-hidden="true" />
-                        <span>{t('title')}</span>
-                    </p>
-                    <h1 className="platform-page-title">{competition.name}</h1>
-                    <p className="platform-page-description">
-                        {t('description', { name: competition.name })}
-                    </p>
-                </div>
-                {competition.antiCheatEnabled ? (
-                    <div className="platform-page-aside">
-                        <AntiCheatBadge enabled size="md" />
-                    </div>
-                ) : null}
-            </header>
-
+            {header}
             <div className="mt-8 max-w-3xl">
                 <form onSubmit={onSubmit} className="platform-panel space-y-6 p-5 sm:p-7 lg:p-8">
                     {competition.isPrivate && (
@@ -286,150 +278,12 @@ export function JoinCompetition({ competition, organizerDataConsent }: JoinCompe
                                     })}
                                 </p>
 
-                                <div className="grid gap-5 sm:grid-cols-2">
-                                    {competition.requiredFields.includes('firstName') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="firstName">
-                                                {tRequired('fields.firstName')}
-                                            </Label>
-                                            <Input
-                                                id="firstName"
-                                                required
-                                                value={requiredFieldsForm.firstName || ''}
-                                                onChange={(e) =>
-                                                    handleRequiredFieldChange(
-                                                        'firstName',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                            />
-                                        </div>
-                                    )}
-                                    {competition.requiredFields.includes('lastName') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="lastName">
-                                                {tRequired('fields.lastName')}
-                                            </Label>
-                                            <Input
-                                                id="lastName"
-                                                required
-                                                value={requiredFieldsForm.lastName || ''}
-                                                onChange={(e) =>
-                                                    handleRequiredFieldChange(
-                                                        'lastName',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                            />
-                                        </div>
-                                    )}
-                                    {competition.requiredFields.includes('grade') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="grade">
-                                                {tRequired('fields.grade')}
-                                            </Label>
-                                            {competition.validGrades &&
-                                            competition.validGrades.length > 0 ? (
-                                                <Select
-                                                    value={requiredFieldsForm.grade || ''}
-                                                    onValueChange={(value) =>
-                                                        handleRequiredFieldChange('grade', value)
-                                                    }
-                                                    required
-                                                >
-                                                    <SelectTrigger
-                                                        id="grade"
-                                                        className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                                    >
-                                                        <SelectValue
-                                                            placeholder={tRequired('fields.grade')}
-                                                        />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {competition.validGrades.map((grade) => (
-                                                            <SelectItem key={grade} value={grade}>
-                                                                {grade}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            ) : (
-                                                <Input
-                                                    id="grade"
-                                                    required
-                                                    value={requiredFieldsForm.grade || ''}
-                                                    onChange={(e) =>
-                                                        handleRequiredFieldChange(
-                                                            'grade',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                    {competition.requiredFields.includes('phone') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone">
-                                                {tRequired('fields.phone')}
-                                            </Label>
-                                            <Input
-                                                id="phone"
-                                                type="tel"
-                                                required
-                                                value={requiredFieldsForm.phone || ''}
-                                                onChange={(e) =>
-                                                    handleRequiredFieldChange(
-                                                        'phone',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                            />
-                                        </div>
-                                    )}
-                                    {competition.requiredFields.includes('coordinatorTeacher') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="coordinatorTeacher">
-                                                {tRequired('fields.coordinatorTeacher')}
-                                            </Label>
-                                            <Input
-                                                id="coordinatorTeacher"
-                                                required
-                                                value={requiredFieldsForm.coordinatorTeacher || ''}
-                                                onChange={(e) =>
-                                                    handleRequiredFieldChange(
-                                                        'coordinatorTeacher',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                            />
-                                        </div>
-                                    )}
-                                    {competition.requiredFields.includes('schoolTeacher') && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="schoolTeacher">
-                                                {tRequired('fields.schoolTeacher')}
-                                            </Label>
-                                            <Input
-                                                id="schoolTeacher"
-                                                required
-                                                value={requiredFieldsForm.schoolTeacher || ''}
-                                                onChange={(e) =>
-                                                    handleRequiredFieldChange(
-                                                        'schoolTeacher',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="min-h-11 rounded-none border-[var(--platform-line-strong)] bg-[var(--platform-paper)]"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+                                <CompetitionRegistrationFields
+                                    requiredFields={competition.requiredFields}
+                                    validGrades={competition.validGrades}
+                                    values={requiredFieldsForm}
+                                    onChange={handleRequiredFieldChange}
+                                />
                             </div>
                         )}
 

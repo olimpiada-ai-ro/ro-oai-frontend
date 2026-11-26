@@ -21,7 +21,8 @@ import {
     redeemStoredCompetitionInvitation,
     type CompetitionInvitationPreview,
 } from '@/lib/competition-hosting';
-import type { Locale } from '@/lib/types';
+import type { Locale, RequiredFieldsUpdateRequest } from '@/lib/types';
+import { CompetitionRegistrationFields } from '@/components/competition-registration-fields';
 
 function formatExpiry(value: string | null, locale: Locale): string | null {
     if (!value) return null;
@@ -46,7 +47,10 @@ export function CompetitionInvitation({
     authenticated: boolean;
 }) {
     const t = useTranslations('competitionHosting.invitation');
+    const tRequired = useTranslations('requiredFields');
     const router = useRouter();
+    const [registration, setRegistration] = useState<RequiredFieldsUpdateRequest>({});
+    const requiredFields = invitation.sharedLink ? (invitation.requiredFields ?? []) : [];
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const hasOrganizerConsentNotice = Boolean(
@@ -59,12 +63,16 @@ export function CompetitionInvitation({
     const callbackPath = `/${locale}/competition-invitations/continue/${invitationHandle}`;
 
     const accept = async () => {
+        if (!authenticated || !invitation.valid || busy) return;
         setBusy(true);
         setError(null);
         try {
             const result = await redeemStoredCompetitionInvitation(
                 invitationHandle,
                 sharePersonalDataWithOrganizer,
+                requiredFields.length && Object.keys(registration).length
+                    ? registration
+                    : undefined,
             );
             router.replace(`/competitions/${result.competitionId}`);
             router.refresh();
@@ -109,7 +117,13 @@ export function CompetitionInvitation({
                                 <Trophy className="h-6 w-6" aria-hidden="true" />
                             </span>
                         </div>
-                        <div className="flex min-w-0 flex-col p-6 sm:p-9 lg:p-11">
+                        <form
+                            className="flex min-w-0 flex-col p-6 sm:p-9 lg:p-11"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                void accept();
+                            }}
+                        >
                             <p className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--platform-violet)]">
                                 {t('eyebrow')}
                             </p>
@@ -184,6 +198,36 @@ export function CompetitionInvitation({
                                 </p>
                             )}
 
+                            {authenticated && invitation.valid && requiredFields.length > 0 && (
+                                <fieldset disabled={busy} className="mt-7 space-y-4">
+                                    <legend className="mb-4 text-sm">
+                                        {tRequired('dialog.description', {
+                                            competitionName: invitation.competition?.name ?? '',
+                                        })}
+                                    </legend>
+                                    <CompetitionRegistrationFields
+                                        requiredFields={requiredFields}
+                                        validGrades={invitation.validGrades}
+                                        values={registration}
+                                        onChange={(field, value) =>
+                                            setRegistration((current) => ({
+                                                ...current,
+                                                [field]: value,
+                                            }))
+                                        }
+                                        maxLength={255}
+                                    />
+                                    {requiredFields.includes('institutionId') && (
+                                        <Link
+                                            href="/institutions"
+                                            className="inline-block font-semibold underline"
+                                        >
+                                            {tRequired('selectInstitution')}
+                                        </Link>
+                                    )}
+                                </fieldset>
+                            )}
+
                             {invitation.valid &&
                             invitation.thirdPartyHosted &&
                             invitation.organizerName ? (
@@ -224,8 +268,7 @@ export function CompetitionInvitation({
                                     </Link>
                                 ) : authenticated ? (
                                     <button
-                                        type="button"
-                                        onClick={() => void accept()}
+                                        type="submit"
                                         disabled={busy}
                                         className="inline-flex min-h-11 items-center justify-center gap-2 bg-[var(--platform-violet)] px-5 text-sm font-bold text-white shadow-[4px_4px_0_var(--platform-line)] disabled:opacity-50 dark:text-[var(--platform-on-accent)]"
                                     >
@@ -249,7 +292,7 @@ export function CompetitionInvitation({
                                     </Link>
                                 )}
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </section>
             </div>

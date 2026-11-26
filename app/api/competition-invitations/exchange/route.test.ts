@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     COMPETITION_INVITATION_PREVIEW_COOKIE,
@@ -10,6 +10,8 @@ import {
 import { POST } from './route';
 
 describe('fragment competition invitation exchange', () => {
+    beforeEach(() => vi.stubEnv('NEXTAUTH_URL', 'https://platform.olimpiada-ai.ro'));
+    afterEach(() => vi.unstubAllEnvs());
     it('moves the bearer into handle-scoped HttpOnly cookies', async () => {
         const token = 'abcdefghijklmnopqrstuvwxyz_ABCDEFGH-123456';
         const handle = await getCompetitionInvitationHandle(token);
@@ -38,6 +40,19 @@ describe('fragment competition invitation exchange', () => {
         expect(cookies).toContain(`Path=/ro/competition-invitations/continue/${handle}`);
         expect(cookies).toContain(`Path=/api/competition-invitations/${handle}`);
         expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+    });
+
+    it('allows the public site origin behind the internal service URL', async () => {
+        const request = new NextRequest(
+            'http://service.internal:3000/api/competition-invitations/exchange',
+            {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ token: 'comp_' + 'x'.repeat(43), locale: 'ro' }),
+            },
+        );
+        request.headers.set('origin', 'https://platform.olimpiada-ai.ro');
+        expect((await POST(request)).status).toBe(200);
     });
 
     it('rejects invalid tokens and cross-origin requests', async () => {

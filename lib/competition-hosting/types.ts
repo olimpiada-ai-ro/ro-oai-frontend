@@ -171,6 +171,9 @@ export type CompetitionInviteeOption = {
 };
 
 export type CompetitionInvitationPreview = {
+    sharedLink?: boolean;
+    requiredFields?: string[];
+    validGrades?: string[];
     valid: boolean;
     thirdPartyHosted: boolean;
     status: string;

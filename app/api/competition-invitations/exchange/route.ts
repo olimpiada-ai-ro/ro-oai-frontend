@@ -7,6 +7,7 @@ import {
     competitionInvitationPreviewCookiePath,
     competitionInvitationRedeemCookiePath,
     getCompetitionInvitationHandle,
+    isAllowedCompetitionInvitationOrigin,
 } from '@/lib/competition-hosting/invitation-session';
 import { SUPPORTED_LOCALES, type Locale } from '@/lib/types';
 
@@ -21,7 +22,7 @@ function apiError(status: number, errorCode: string, publicErrorMessage: string)
 
 export async function POST(request: NextRequest) {
     const origin = request.headers.get('origin');
-    if (origin && origin !== request.nextUrl.origin) {
+    if (!isAllowedCompetitionInvitationOrigin(origin, request.nextUrl.origin)) {
         return apiError(403, 'INVALID_ORIGIN', 'The request origin is not allowed');
     }
     const contentLength = Number(request.headers.get('content-length') ?? 0);
