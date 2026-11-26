@@ -66,6 +66,45 @@ describe('competition invitation consent', () => {
             expect(mocks.redeemStoredCompetitionInvitation).toHaveBeenCalledWith(
                 'safe-handle',
                 true,
+                undefined,
+            ),
+        );
+        expect(mocks.replace).toHaveBeenCalledWith('/competitions/42');
+    });
+
+    it('collects only the configured fields when redeeming a shared competition link', async () => {
+        render(
+            <CompetitionInvitation
+                invitationHandle="safe-handle"
+                locale="ro"
+                authenticated
+                invitation={{
+                    sharedLink: true,
+                    requiredFields: ['firstName', 'phone'],
+                    validGrades: [],
+                    valid: true,
+                    thirdPartyHosted: false,
+                    status: 'PENDING',
+                    maskedEmail: null,
+                    competition: { id: 42, name: 'Junior AI' },
+                    organizerName: null,
+                    expiresAt: null,
+                    message: null,
+                    consentNoticeVersion: null,
+                }}
+            />,
+        );
+        expect(screen.queryByRole('textbox', { name: 'fields.grade' })).toBeNull();
+        fireEvent.change(screen.getByLabelText('fields.firstName'), { target: { value: 'Ana' } });
+        fireEvent.change(screen.getByLabelText('fields.phone'), {
+            target: { value: '0700000000' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+        await waitFor(() =>
+            expect(mocks.redeemStoredCompetitionInvitation).toHaveBeenCalledWith(
+                'safe-handle',
+                undefined,
+                { firstName: 'Ana', phone: '0700000000' },
             ),
         );
         expect(mocks.replace).toHaveBeenCalledWith('/competitions/42');
@@ -93,6 +132,9 @@ describe('competition invitation consent', () => {
 
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         expect(screen.getByText('thirdPartyExplanation Community Foundation')).toBeVisible();
-        expect(screen.getByRole('link', { name: /signIn/ })).toBeVisible();
+        expect(screen.getByRole('link', { name: /signIn/ })).toHaveAttribute(
+            'href',
+            '/login?callbackUrl=%2Fen%2Fcompetition-invitations%2Fcontinue%2Fsafe-handle',
+        );
     });
 });

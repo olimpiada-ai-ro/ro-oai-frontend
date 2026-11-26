@@ -70,6 +70,17 @@ describe('competition join organizer consent', () => {
         mocks.fetchApi.mockResolvedValue(new Response(null, { status: 200 }));
     });
 
+    it('shows the invitation instructions for link-only competition registration', () => {
+        render(
+            <JoinCompetition
+                competition={{ ...competition, isPrivate: true, inviteLinkOnly: true }}
+            />,
+        );
+        expect(screen.getByText('inviteLinkRequired')).toBeVisible();
+        expect(screen.queryByLabelText('password')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'submit' })).toBeNull();
+    });
+
     it('allows joining while the optional sharing choice remains unchecked', async () => {
         render(
             <JoinCompetition

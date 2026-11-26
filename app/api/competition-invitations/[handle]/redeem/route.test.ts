@@ -13,12 +13,14 @@ import { POST } from './route';
 
 describe('stored competition invitation redemption', () => {
     beforeEach(() => {
+        vi.stubEnv('NEXTAUTH_URL', 'https://platform.olimpiada-ai.ro');
         process.env.NEXT_PUBLIC_API_BASE_URL = 'https://api.example.test';
         mocks.getSession.mockResolvedValue({ accessToken: 'access-token' });
     });
 
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 
@@ -61,6 +63,30 @@ describe('stored competition invitation redemption', () => {
         expect(response.headers.get('set-cookie')).toContain(
             'Expires=Thu, 01 Jan 1970 00:00:00 GMT',
         );
+    });
+
+    it('sends the allowed shared-link registration fields only with the authenticated redeem request', async () => {
+        const token = 'comp_' + 'a'.repeat(43);
+        const handle = await getCompetitionInvitationHandle(token);
+        const upstream = vi.fn().mockResolvedValue(Response.json({ competitionId: 42 }));
+        vi.stubGlobal('fetch', upstream);
+        const request = new NextRequest(
+            'https://example.test/api/competition-invitations/' + handle + '/redeem',
+            {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                    registration: { firstName: 'Ana', grade: '6', institutionId: 23 },
+                }),
+            },
+        );
+        request.cookies.set(COMPETITION_INVITATION_REDEEM_COOKIE, token);
+        const response = await POST(request, { params: Promise.resolve({ handle }) });
+        expect(response.status).toBe(200);
+        expect(JSON.parse(upstream.mock.calls[0]?.[1]?.body as string)).toEqual({
+            token,
+            registration: { firstName: 'Ana', grade: '6' },
+        });
     });
 
     it('rejects a cookie from another invitation handle', async () => {

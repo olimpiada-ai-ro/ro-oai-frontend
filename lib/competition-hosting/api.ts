@@ -1,3 +1,4 @@
+import type { RequiredFieldsUpdateRequest } from '@/lib/types';
 import { fetchApi } from '@/lib/api';
 import { fetchPublicApi } from '@/lib/public-api';
 import { normalizeProblemProposal } from '@/lib/problem-proposals';
@@ -803,6 +804,21 @@ export async function getCompetitionInvitation(
     const status = asString(row.status, 'INVALID');
     return {
         valid: asBoolean(row.valid) || status.toUpperCase() === 'PENDING',
+        ...(row.sharedLink === true
+            ? {
+                  sharedLink: true,
+                  requiredFields: Array.isArray(row.requiredFields)
+                      ? row.requiredFields.filter(
+                            (field): field is string => typeof field === 'string',
+                        )
+                      : [],
+                  validGrades: Array.isArray(row.validGrades)
+                      ? row.validGrades.filter(
+                            (grade): grade is string => typeof grade === 'string',
+                        )
+                      : [],
+              }
+            : {}),
         thirdPartyHosted: asBoolean(row.thirdPartyHosted),
         status,
         maskedEmail: asNullableString(row.maskedEmail),
@@ -825,6 +841,7 @@ export async function getCompetitionInvitation(
 export async function redeemStoredCompetitionInvitation(
     handle: string,
     sharePersonalDataWithOrganizer?: boolean,
+    registration?: RequiredFieldsUpdateRequest,
 ): Promise<{ competitionId: number }> {
     const response = await fetch(
         `/api/competition-invitations/${encodeURIComponent(handle)}/redeem`,
@@ -832,11 +849,7 @@ export async function redeemStoredCompetitionInvitation(
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify(
-                sharePersonalDataWithOrganizer === undefined
-                    ? {}
-                    : { sharePersonalDataWithOrganizer },
-            ),
+            body: JSON.stringify({ sharePersonalDataWithOrganizer, registration }),
         },
     );
     if (!response.ok) throw await parseError(response, 'Unable to accept this invitation');

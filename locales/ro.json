@@ -1343,6 +1343,7 @@
         }
     },
     "join": {
+        "inviteLinkRequired": "Pentru a te înscrie, deschide linkul de invitație primit de la organizator.",
         "registerFailedInitialMessage": "Înregistrarea a eșuat. Te rugăm să verifici datele și să încerci din nou.",
         "registerFailedGenericMessage": "Eroare neașteptată. Te rugăm să încerci din nou mai târziu.",
         "participantId": "ID participant",

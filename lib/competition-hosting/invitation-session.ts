@@ -2,6 +2,20 @@ export const COMPETITION_INVITATION_PREVIEW_COOKIE = 'competition_invitation_pre
 export const COMPETITION_INVITATION_REDEEM_COOKIE = 'competition_invitation_redeem';
 export const COMPETITION_INVITATION_COOKIE_MAX_AGE_SECONDS = 30 * 60;
 
+export function isAllowedCompetitionInvitationOrigin(
+    origin: string | null,
+    requestOrigin: string,
+): boolean {
+    if (!origin) return true;
+    // Standalone Next.js receives internal service URLs behind the production ingress.
+    const siteUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || requestOrigin;
+    try {
+        return origin === new URL(siteUrl).origin;
+    } catch {
+        return false;
+    }
+}
+
 export function isCompetitionInvitationHandle(value: string): boolean {
     return /^[a-f0-9]{32}$/.test(value);
 }

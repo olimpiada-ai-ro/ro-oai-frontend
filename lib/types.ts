@@ -360,6 +360,7 @@ export type CompetitionUserResponse = {
 };
 
 export type BasicCompetitionUserResponse = {
+    inviteLinkOnly?: boolean;
     id: number;
     name: string;
     isPrivate: boolean;
