@@ -92,6 +92,20 @@ export const DEFAULT_LOCALE: Locale = I18N_DEFAULT_LOCALE;
 
 export type SupportedLocale = Locale;
 
+export const PLATFORM_OG_VERSION = 'onia-og-2';
+
+export type PlatformOgKind =
+    | 'generic'
+    | 'problems'
+    | 'competitions'
+    | 'articles'
+    | 'leaderboard'
+    | 'institutions'
+    | 'countries'
+    | 'roadmap'
+    | 'achievements'
+    | 'legal';
+
 // ============================================================================
 // Locale to Region Mapping for og:locale format
 // ============================================================================
@@ -153,7 +167,7 @@ export const SITE_CONFIG: SiteConfig = {
     description:
         'Machine Learning Competition Platform - Evaluate your ML models and compete with others',
     url: BASE_URL,
-    ogImage: `${BASE_URL}/og-image.png`,
+    ogImage: `${BASE_URL}/og-image-v2.png`,
     twitterHandle: '@mlcompete',
     locale: DEFAULT_LOCALE,
     supportedLocales: [...SUPPORTED_LOCALES],
@@ -388,16 +402,66 @@ export function isDevelopment(): boolean {
 // Dynamic OG Image Generation
 // ============================================================================
 
+function compactOgParameter(value: string, maxCodePoints: number): string {
+    return Array.from(value.normalize('NFC').trim().replace(/\s+/g, ' '))
+        .slice(0, maxCodePoints)
+        .join('');
+}
+
+function normalizeOgCountryCode(countryCode: string | null | undefined): string | null {
+    const normalizedCountryCode = countryCode?.trim().toUpperCase() ?? '';
+    return /^[A-Z]{2}$/.test(normalizedCountryCode) ? normalizedCountryCode : null;
+}
+
+function createOgImageUrl(
+    type: string,
+    params: Record<string, string | number | null | undefined>,
+    version = PLATFORM_OG_VERSION,
+): string {
+    const searchParams = new URLSearchParams({ type });
+
+    for (const [key, value] of Object.entries(params)) {
+        if (value === undefined || value === null || value === '') continue;
+        searchParams.set(key, String(value));
+    }
+
+    searchParams.set('v', version);
+    return `${BASE_URL}/api/og?${searchParams.toString()}`;
+}
+
+/**
+ * Generate the homepage card used by localized homepage metadata.
+ */
+export function generateHomeOgImageUrl(
+    title = 'MLCompete',
+    subtitle = 'Machine learning competitions, built for learning',
+): string {
+    return createOgImageUrl('home', {
+        title: compactOgParameter(title, 96),
+        subtitle: compactOgParameter(subtitle, 160),
+    });
+}
+
 /**
  * Generate dynamic OG image URL for problems
  */
-export function generateProblemOgImageUrl(title: string, difficulty: string): string {
-    const params = new URLSearchParams({
-        type: 'problem',
-        title,
-        difficulty,
+export function generateProblemOgImageUrl(
+    title: string,
+    difficulty: string,
+    options?: {
+        problemId?: number;
+        authorLine?: string;
+    },
+): string {
+    return createOgImageUrl('problem', {
+        title: compactOgParameter(title, 96),
+        difficulty: compactOgParameter(difficulty, 16),
+        problemId:
+            options?.problemId && Number.isSafeInteger(options.problemId) && options.problemId > 0
+                ? options.problemId
+                : undefined,
+        authorLine: options?.authorLine ? compactOgParameter(options.authorLine, 72) : undefined,
     });
-    return `${BASE_URL}/api/og?${params.toString()}`;
 }
 
 /**
@@ -410,20 +474,49 @@ export function generateProfileOgImageUrl(
         totalScore?: number;
         problemsSolved?: number;
     },
+    options?: {
+        countryCode?: string | null;
+        hasAvatar?: boolean;
+    },
 ): string {
+    const maximumPublicMetric = 1_000_000_000;
     const params = new URLSearchParams({
         type: 'profile',
-        username,
+        username: compactOgParameter(username, 64),
+        v: 'profile-3',
     });
 
-    if (stats.rank !== undefined) {
+    if (
+        stats.rank !== undefined &&
+        Number.isInteger(stats.rank) &&
+        stats.rank > 0 &&
+        stats.rank <= maximumPublicMetric
+    ) {
         params.set('rank', stats.rank.toString());
     }
-    if (stats.totalScore !== undefined) {
+    if (
+        stats.totalScore !== undefined &&
+        Number.isFinite(stats.totalScore) &&
+        stats.totalScore >= 0 &&
+        stats.totalScore <= maximumPublicMetric
+    ) {
         params.set('totalScore', stats.totalScore.toString());
     }
-    if (stats.problemsSolved !== undefined) {
+    if (
+        stats.problemsSolved !== undefined &&
+        Number.isInteger(stats.problemsSolved) &&
+        stats.problemsSolved >= 0 &&
+        stats.problemsSolved <= maximumPublicMetric
+    ) {
         params.set('problemsSolved', stats.problemsSolved.toString());
+    }
+
+    const countryCode = options?.countryCode?.trim().toUpperCase();
+    if (countryCode && /^[A-Z]{2}$/.test(countryCode)) {
+        params.set('countryCode', countryCode);
+    }
+    if (options?.hasAvatar === true) {
+        params.set('avatar', '1');
     }
 
     return `${BASE_URL}/api/og?${params.toString()}`;
@@ -432,17 +525,103 @@ export function generateProfileOgImageUrl(
 /**
  * Generate dynamic OG image URL for generic pages
  */
-export function generateGenericOgImageUrl(title: string, subtitle?: string): string {
+export function generateGenericOgImageUrl(
+    title: string,
+    subtitle?: string,
+    options?: {
+        kind?: PlatformOgKind;
+        countryCode?: string | null;
+    },
+): string {
+    return generatePlatformOgImageUrl(title, subtitle, options);
+}
+
+/**
+ * Generate a collection/static page image within the shared ONIA-v2 family.
+ */
+export function generatePlatformOgImageUrl(
+    title: string,
+    subtitle?: string,
+    options?: {
+        kind?: PlatformOgKind;
+        countryCode?: string | null;
+    },
+): string {
+    return createOgImageUrl('generic', {
+        title: compactOgParameter(title, 96),
+        subtitle: subtitle ? compactOgParameter(subtitle, 160) : undefined,
+        kind: options?.kind && options.kind !== 'generic' ? options.kind : undefined,
+        countryCode: normalizeOgCountryCode(options?.countryCode),
+    });
+}
+
+/**
+ * Generate a dynamic OG image URL for a country page.
+ *
+ * The version parameter provides an explicit cache-busting seam for future
+ * visual revisions without changing the canonical country URL.
+ */
+export function generateCountryOgImageUrl(countryName: string, countryCode: string): string {
     const params = new URLSearchParams({
-        type: 'generic',
-        title,
+        type: 'country',
+        title: countryName,
+        countryCode: countryCode.trim().toUpperCase(),
+        v: 'country-2',
     });
 
-    if (subtitle) {
-        params.set('subtitle', subtitle);
-    }
-
     return `${BASE_URL}/api/og?${params.toString()}`;
+}
+
+/**
+ * Generate a published article/editorial card.
+ */
+export function generateArticleOgImageUrl(
+    title: string,
+    options?: {
+        excerpt?: string;
+        kind?: 'ARTICLE' | 'PROBLEM_EDITORIAL';
+        problemTitle?: string;
+        authorLine?: string;
+        revision?: string;
+    },
+): string {
+    return createOgImageUrl('article', {
+        title: compactOgParameter(title, 96),
+        subtitle: options?.excerpt ? compactOgParameter(options.excerpt, 160) : undefined,
+        articleKind: options?.kind,
+        problemTitle: options?.problemTitle
+            ? compactOgParameter(options.problemTitle, 72)
+            : undefined,
+        authorLine: options?.authorLine ? compactOgParameter(options.authorLine, 72) : undefined,
+        revision: options?.revision ? compactOgParameter(options.revision, 40) : undefined,
+    });
+}
+
+/**
+ * Generate an educational institution card.
+ */
+export function generateInstitutionOgImageUrl(
+    name: string,
+    options?: {
+        countryCode?: string | null;
+        location?: string;
+    },
+): string {
+    return createOgImageUrl('institution', {
+        title: compactOgParameter(name, 96),
+        countryCode: normalizeOgCountryCode(options?.countryCode),
+        location: options?.location ? compactOgParameter(options.location, 72) : undefined,
+    });
+}
+
+/**
+ * Generate a Romanian county card.
+ */
+export function generateCountyOgImageUrl(name: string, countyCode?: string): string {
+    return createOgImageUrl('county', {
+        title: compactOgParameter(name, 96),
+        countyCode: countyCode ? compactOgParameter(countyCode, 12) : undefined,
+    });
 }
 
 /**
@@ -459,13 +638,15 @@ export function generateCompetitionOgImageUrl(
     name: string,
     status: string,
     dates: { start: string; end: string },
+    options?: {
+        detailsLine?: string;
+    },
 ): string {
-    const params = new URLSearchParams({
-        type: 'competition',
-        title: name,
-        status,
+    return createOgImageUrl('competition', {
+        title: compactOgParameter(name, 96),
+        status: compactOgParameter(status, 16),
         startDate: dates.start,
         endDate: dates.end,
+        detailsLine: options?.detailsLine ? compactOgParameter(options.detailsLine, 72) : undefined,
     });
-    return `${BASE_URL}/api/og?${params.toString()}`;
 }

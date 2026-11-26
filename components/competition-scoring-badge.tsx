@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye } from 'lucide-react';
+import { Eye, Files } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
@@ -15,17 +15,18 @@ type CompetitionScoringBadgeProps = {
 };
 
 /**
- * Makes the participant-facing consequence of casual scoring explicit.
- * The backend remains authoritative for which score values are returned.
+ * Highlights competition formats with a distinct participant experience.
  */
 export function CompetitionScoringBadge({
     competitionType,
     size = 'sm',
     className,
 }: CompetitionScoringBadgeProps) {
-    const t = useTranslations('competitions.scoring');
+    const t = useTranslations('competitions');
 
-    if (!hasLiveFinalScores(competitionType)) return null;
+    const hybrid = competitionType === 'HYBRID';
+    if (!hybrid && !hasLiveFinalScores(competitionType)) return null;
+    const Icon = hybrid ? Files : Eye;
 
     return (
         <Badge
@@ -35,13 +36,13 @@ export function CompetitionScoringBadge({
                 size === 'sm' ? 'min-h-7 px-2.5 text-xs' : 'min-h-8 px-3 text-sm',
                 className,
             )}
-            aria-label={t('visibleDescription')}
+            aria-label={t(hybrid ? 'hybrid.format' : 'scoring.visibleDescription')}
         >
-            <Eye
+            <Icon
                 className={cn('me-1.5 shrink-0', size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4')}
                 aria-hidden="true"
             />
-            {t('visible')}
+            {t(hybrid ? 'hybrid.format' : 'scoring.visible')}
         </Badge>
     );
 }

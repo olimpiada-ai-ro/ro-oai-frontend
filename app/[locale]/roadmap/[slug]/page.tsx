@@ -47,7 +47,7 @@ export async function generateMetadata({
     const title = page.title;
     const description = 'What we are building next and our vision for the platform';
 
-    const ogImage = generateGenericOgImageUrl('Roadmap', description);
+    const ogImage = generateGenericOgImageUrl(title, description, { kind: 'roadmap' });
 
     const config: MetadataConfig = {
         title: `${title} - MLCompete`,

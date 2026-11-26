@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom/vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,6 +53,7 @@ vi.mock('@/i18n/routing', () => ({
 
 import { LeaderboardView } from '@/components/leaderboard-view';
 import type { GenericLeaderboardEntry } from '@/lib/types';
+import type { IdentityPresentation } from '@/lib/identity-presentation';
 
 const leaderboard: GenericLeaderboardEntry[] = Array.from({ length: 75 }, (_, index) => ({
     rank: index + 1,
@@ -60,6 +63,19 @@ const leaderboard: GenericLeaderboardEntry[] = Array.from({ length: 75 }, (_, in
     solvedCount: index,
     averageScore: 90,
 }));
+
+const identityPresentation: IdentityPresentation = {
+    title: {
+        id: 2026,
+        code: 'IOAI_2026_GOLD',
+        name: 'IOAI 2026 Champion',
+        prefixEmoji: 'GOLD_MEDAL',
+        color: 'GOLD',
+        font: 'DISPLAY',
+        effect: 'GLITTER',
+    },
+    usernameStyle: { color: 'GOLD', font: 'DEFAULT', effect: 'GLOW' },
+};
 
 describe('LeaderboardView progressive rendering', () => {
     beforeEach(() => {
@@ -89,5 +105,56 @@ describe('LeaderboardView progressive rendering', () => {
         expect(screen.getByText('participant-50')).toBeTruthy();
         expect(screen.queryByText('participant-51')).toBeNull();
         expect(screen.getByText('51 results / 75')).toBeTruthy();
+    });
+});
+
+describe('LeaderboardView identity fairness', () => {
+    const decoratedEntry: GenericLeaderboardEntry = {
+        rank: 1,
+        userId: 'ioai-champion',
+        username: 'champion',
+        totalScore: 100,
+        identityPresentation,
+    };
+
+    it('shows titles on the global and casual leaderboards', () => {
+        const { rerender } = render(
+            <LeaderboardView
+                leaderboard={[decoratedEntry]}
+                simple
+                identitySurface="GLOBAL_LEADERBOARD"
+            />,
+        );
+
+        expect(screen.getByText('IOAI 2026 Champion')).toBeInTheDocument();
+
+        rerender(
+            <LeaderboardView
+                leaderboard={[decoratedEntry]}
+                simple
+                identitySurface="CASUAL_COMPETITION_LEADERBOARD"
+            />,
+        );
+
+        expect(screen.getByText('IOAI 2026 Champion')).toBeInTheDocument();
+    });
+
+    it('suppresses titles and username effects on classic or unspecified competition leaderboards', () => {
+        const { rerender } = render(
+            <LeaderboardView
+                leaderboard={[decoratedEntry]}
+                simple
+                identitySurface="RESTRICTED_COMPETITION_LEADERBOARD"
+            />,
+        );
+
+        expect(screen.queryByText('IOAI 2026 Champion')).not.toBeInTheDocument();
+        expect(screen.getByText('champion').parentElement).toHaveAttribute(
+            'data-identity-effect',
+            'NONE',
+        );
+
+        rerender(<LeaderboardView leaderboard={[decoratedEntry]} simple />);
+        expect(screen.queryByText('IOAI 2026 Champion')).not.toBeInTheDocument();
     });
 });

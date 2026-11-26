@@ -202,13 +202,14 @@ const ALLOWED_BINARY_FILES = Object.freeze({
     'public/favicon.ico': 'ded78b2a33af36e1c548551ee24c9338d12ad25eafe96707b90b3a5dd0b26cb0',
     'public/logo-dark.png': '3d9aaf4015c681e2f1ddaba83b62d4382601ba626dd2e35d6221d20c1ed66562',
     'public/logo.png': '539ddde358af6758989b17a7662dd1aa50e264279a776996672469871f00a4fa',
+    'public/og-image-v2.png': 'eae625a351236c6beca027b69162f35db7cc5bd37857e140bfd0eb1872dc79f3',
     'public/placeholder-logo.png':
         'd7c39d978af643ba9525de6fb8171e0f834882db4110c82ecad0df3f4f69551a',
     'public/placeholder-user.jpg':
         '22be067d748175598a5e00123902f5c8332dd7f101de03dfb92ec08d85bb5e53',
     'public/placeholder.jpg': '14be0c7aa11cca1e78f0966176b286a6d36d00ec64be027775dfeb33d8e2dfdf',
 });
-const CONTENT_PATTERNS = [
+const TOKEN_PATTERNS = [
     ['private-key material', /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/],
     ['AWS access key', /\bAKIA[0-9A-Z]{16}\b/],
     ['GitHub token', /\b(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]{20,}\b/],
@@ -217,6 +218,8 @@ const CONTENT_PATTERNS = [
     ['OpenAI-style key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/],
     ['JWT bearer token', /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/],
     ['hard-coded Sentry DSN', /https:\/\/[A-Za-z0-9]+@[A-Za-z0-9.-]*sentry\.io\/[0-9]+/i],
+];
+const OPERATIONAL_IDENTIFIER_PATTERNS = [
     ['private production API hostname', /\bapi\.platform\.olimpiada-ai\.ro\b/i],
     ['private identity-provider hostname', /\bauth\.olimpiada-ai\.ro\b/i],
     [
@@ -225,6 +228,10 @@ const CONTENT_PATTERNS = [
     ],
     ['cluster-internal hostname', /\bkubernetes\.default(?:\.svc)?\b/i],
 ];
+const ALLOWED_OPERATIONAL_IDENTIFIERS = Object.freeze({
+    'lib/seo/og/profile-avatar.test.ts': new Set(['object-storage account hostname']),
+    'lib/seo/og/profile-avatar.ts': new Set(['object-storage account hostname']),
+});
 const SECRET_ASSIGNMENT_PATTERN =
     /\b(?:KEYCLOAK_CLIENT_SECRET|NEXTAUTH_SECRET|SENTRY_AUTH_TOKEN|API_KEY|ACCESS_TOKEN|PRIVATE_KEY)\s*[:=]\s*(?:"([^"]*)"|'([^']*)'|([^\s#,}\]]+))/g;
 const URL_USERINFO_PATTERN = /\bhttps?:\/\/([^/\s:@]+):([^@\s/]+)@/gi;
@@ -362,8 +369,14 @@ function contentFindings(file, content) {
         return ['content is not canonical UTF-8'];
     }
 
-    for (const [label, pattern] of CONTENT_PATTERNS) {
+    for (const [label, pattern] of TOKEN_PATTERNS) {
         if (pattern.test(text)) findings.push(label);
+    }
+    const allowedOperationalIdentifiers = ALLOWED_OPERATIONAL_IDENTIFIERS[file] ?? new Set();
+    for (const [label, pattern] of OPERATIONAL_IDENTIFIER_PATTERNS) {
+        if (pattern.test(text) && !allowedOperationalIdentifiers.has(label)) {
+            findings.push(label);
+        }
     }
     if (!INTERNAL_REFERENCE_EXEMPT_FILES.has(file)) {
         for (const pattern of INTERNAL_CONFIG_REFERENCE_PATTERNS) {

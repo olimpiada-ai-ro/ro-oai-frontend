@@ -32,6 +32,8 @@ import { fetchUserLevel } from '@/lib/level/api';
 import { getServerLocale } from '@/lib/i18n-server';
 import { generateProfileMetadata } from '@/lib/seo/page-metadata';
 import { generatePersonSchema } from '@/lib/seo/structured-data';
+import { getProfileIdentityPresentation } from '@/lib/profile-identity-presentation';
+import { limitProfileBio } from '@/lib/profile-bio';
 import { StructuredData } from '@/components/structured-data';
 import { getSession } from '@/lib/auth';
 import { getProfileArticles, type ArticlePage } from '@/lib/articles';
@@ -51,6 +53,7 @@ import { AlertTriangle, CircleUserRound, Home, LockKeyhole, RotateCcw, Trophy } 
 
 interface ProfileResponse {
     profile: {
+        identityPresentation?: unknown;
         leaderboard: {
             userId: string;
             totalScore: number;
@@ -58,6 +61,7 @@ interface ProfileResponse {
             rank: number;
             solvedCount: number;
             averageScore: number;
+            identityPresentation?: unknown;
         } | null;
         submissions: Submission[] | null;
     };
@@ -135,7 +139,9 @@ export async function generateMetadata({
     const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${id}`;
 
     try {
-        const resp = await fetchApi(url);
+        const resp = await fetchApi(url, {
+            headers: { 'accept-language': locale },
+        });
 
         if (resp.status === 403) {
             // Private profile - do not index
@@ -161,6 +167,16 @@ export async function generateMetadata({
         const settings = data.settings;
         const leaderboard = data.profile.leaderboard;
 
+        // A private profile must never emit identity, score, or country data in
+        // social metadata, even for an authenticated owner viewing the page.
+        if (settings.isPublic === false) {
+            return {
+                title: { absolute: `${tProfile('privateTitle')} - MLCompete` },
+                description: tProfile('privateDescription'),
+                robots: { index: false, follow: true },
+            };
+        }
+
         // Get country data
         const userCountry = await getCountryFromCode(settings.countryCode);
         const institutionCountry =
@@ -183,7 +199,7 @@ export async function generateMetadata({
             email: settings.email,
             joinedAt: new Date(settings.joinDate),
             avatar: settings.avatar,
-            bio: settings.bio,
+            bio: limitProfileBio(settings.bio),
             location: settings.location,
             website: settings.website,
             github: settings.github,
@@ -207,19 +223,15 @@ export async function generateMetadata({
             institutionJoinedAt: settings.institutionJoinedAt
                 ? new Date(settings.institutionJoinedAt)
                 : undefined,
+            identityPresentation: getProfileIdentityPresentation(data),
         };
 
-        const metadata = await generateProfileMetadata(profile, locale);
-
-        // Handle private profiles - add noindex
-        // Only set noindex if isPublic is explicitly false (not undefined/null)
-        const robots =
-            settings.isPublic === false
-                ? {
-                      index: false,
-                      follow: true,
-                  }
-                : metadata.robots;
+        const metadata = await generateProfileMetadata(profile, locale, {
+            countryCode:
+                settings.countryCode ||
+                settings.institution?.country?.code ||
+                settings.institutionCountryCode,
+        });
 
         return {
             title: { absolute: metadata.title },
@@ -228,7 +240,7 @@ export async function generateMetadata({
             openGraph: metadata.openGraph,
             twitter: metadata.twitter,
             alternates: metadata.alternates,
-            robots,
+            robots: metadata.robots,
         };
     } catch (error) {
         console.error('[SEO] Failed to generate profile metadata:', error);
@@ -251,11 +263,12 @@ export default async function ProfilePage({
     params: Promise<{ id: string }>;
     searchParams: Promise<{ tab?: string | string[] }>;
 }) {
-    const [t, tError, params, searchParams] = await Promise.all([
+    const [t, tError, params, searchParams, locale] = await Promise.all([
         getTranslations('profile'),
         getTranslations('errorBoundary'),
         paramsPromise,
         searchParamsPromise,
+        getServerLocale(),
     ]);
     const id = params.id;
     const requestedTab = Array.isArray(searchParams.tab) ? searchParams.tab[0] : searchParams.tab;
@@ -264,7 +277,9 @@ export default async function ProfilePage({
     let resp: Response;
 
     try {
-        resp = await fetchApi(url);
+        resp = await fetchApi(url, {
+            headers: { 'accept-language': locale },
+        });
     } catch (error) {
         console.error('[Profile] Failed to fetch profile:', error);
         return (
@@ -381,16 +396,16 @@ export default async function ProfilePage({
     // IMPORTANT: Use the actual userId from settings for all subsequent API calls
     // The URL parameter 'id' might be a username slug, but APIs expect the UUID
     const userId = settings.userId;
-    const localePromise = getServerLocale();
-    const authoredArticlesPromise = getProfileArticles(userId, { size: 3 }).catch((error) => {
-        console.error('[Profile] Failed to fetch authored articles:', error);
-        return {
-            content: [],
-            page: { number: 0, size: 3, totalElements: 0, totalPages: 0 },
-        } as ArticlePage;
-    });
-    const publishedProblemsPromise = localePromise
-        .then((locale) => getProfilePublishedProblems(userId, locale))
+    const authoredArticlesPromise = getProfileArticles(userId, { size: 3, locale }).catch(
+        (error) => {
+            console.error('[Profile] Failed to fetch authored articles:', error);
+            return {
+                content: [],
+                page: { number: 0, size: 3, totalElements: 0, totalPages: 0 },
+            } as ArticlePage;
+        },
+    );
+    const publishedProblemsPromise = getProfilePublishedProblems(userId, locale)
         .then((publishedProblems) => ({
             publishedProblems,
             status: 'ready' as const,
@@ -434,7 +449,7 @@ export default async function ProfilePage({
         email: settings.email,
         joinedAt: new Date(settings.joinDate),
         avatar: settings.avatar,
-        bio: settings.bio,
+        bio: limitProfileBio(settings.bio),
         location: settings.location,
         website: settings.website,
         github: settings.github,
@@ -458,10 +473,8 @@ export default async function ProfilePage({
         institutionJoinedAt: settings.institutionJoinedAt
             ? new Date(settings.institutionJoinedAt)
             : undefined,
+        identityPresentation: getProfileIdentityPresentation(data),
     };
-
-    // Get locale for structured data
-    const locale = await localePromise;
 
     // Generate structured data for profile page (only if explicitly private)
     const personSchema =
@@ -474,7 +487,7 @@ export default async function ProfilePage({
     // Fetch editorial contributions for the user (use userId, not URL slug)
     let editorialContributions: EditorialContribution[] = [];
     try {
-        editorialContributions = await fetchEditorialContributions(userId);
+        editorialContributions = await fetchEditorialContributions(userId, locale);
     } catch (error) {
         console.error('[Profile] Failed to fetch editorial contributions:', error);
         // Continue without editorial contributions

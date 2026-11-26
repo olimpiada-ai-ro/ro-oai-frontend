@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { CountryFlag } from '@/components/country-flag';
 import { PlatformEmptyState, PlatformSectionHeading } from '@/components/platform-page-shell';
 import { UserAvatar } from '@/components/user-avatar';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 import { useGTMTracker } from '@/hooks/use-gtm-tracker';
 import { Link } from '@/i18n/routing';
 import { analytics, AnalyticsEvents } from '@/lib/analytics';
@@ -16,6 +17,7 @@ import { formatShortDate, formatTime } from '@/lib/i18n-formatting';
 import { getProblemContent } from '@/lib/problem-translations';
 import { getProfileUrl } from '@/lib/profile-utils';
 import type { GenericLeaderboardEntry, Locale, Problem } from '@/lib/types';
+import type { IdentityPresentationSurface } from '@/lib/identity-presentation';
 import { cn } from '@/lib/utils';
 
 type LeaderboardViewProps = {
@@ -28,6 +30,7 @@ type LeaderboardViewProps = {
     showAwardRank?: boolean;
     error?: string | null;
     onRetry?: () => void;
+    identitySurface?: IdentityPresentationSurface;
 };
 
 const scoreFormatterOptions: Intl.NumberFormatOptions = {
@@ -93,6 +96,7 @@ export function LeaderboardView({
     isLoading = false,
     error = null,
     onRetry,
+    identitySurface = 'RESTRICTED_COMPETITION_LEADERBOARD',
 }: LeaderboardViewProps) {
     const { data: session } = useSession();
     const currentUserId = session?.id ?? session?.user?.email;
@@ -237,20 +241,35 @@ export function LeaderboardView({
                                             fallbackClassName="text-xs font-semibold"
                                         />
                                         <div className="min-w-0 flex-1">
-                                            <Link
-                                                href={getProfileUrl(entry.userId, entry.username)}
-                                                className="inline-flex min-h-11 max-w-full items-center gap-1.5 font-semibold text-[var(--platform-ink)] underline-offset-4 hover:underline"
-                                                onClick={() =>
-                                                    handleProfileClick(
-                                                        entry.userId,
-                                                        entry.username,
-                                                        entry.rank,
-                                                    )
-                                                }
-                                            >
-                                                <span className="truncate">{entry.username}</span>
+                                            <div className="flex min-w-0 items-start gap-1.5">
+                                                <UserIdentityPresentation
+                                                    surface={identitySurface}
+                                                    layout="stacked"
+                                                    compact
+                                                    identityPresentation={
+                                                        entry.identityPresentation
+                                                    }
+                                                    username={
+                                                        <Link
+                                                            href={getProfileUrl(
+                                                                entry.userId,
+                                                                entry.username,
+                                                            )}
+                                                            className="inline-flex min-h-11 max-w-full items-center truncate font-semibold text-inherit underline-offset-4 hover:underline"
+                                                            onClick={() =>
+                                                                handleProfileClick(
+                                                                    entry.userId,
+                                                                    entry.username,
+                                                                    entry.rank,
+                                                                )
+                                                            }
+                                                        >
+                                                            {entry.username}
+                                                        </Link>
+                                                    }
+                                                />
                                                 <LevelMark level={entry.level} />
-                                            </Link>
+                                            </div>
                                             <div className="flex items-center gap-2 text-xs text-[var(--platform-ink-muted)]">
                                                 {entry.country ? (
                                                     <CountryFlag
@@ -292,25 +311,33 @@ export function LeaderboardView({
                                                 fallbackClassName="text-sm font-semibold"
                                             />
                                             <div className="min-w-0">
-                                                <div className="flex min-w-0 items-center gap-2">
-                                                    <Link
-                                                        href={getProfileUrl(
-                                                            entry.userId,
-                                                            entry.username,
-                                                        )}
-                                                        className="inline-flex min-h-11 min-w-0 items-center truncate font-semibold text-[var(--platform-ink)] underline-offset-4 hover:underline"
-                                                        onClick={() =>
-                                                            handleProfileClick(
-                                                                entry.userId,
-                                                                entry.username,
-                                                                entry.rank,
-                                                            )
+                                                <div className="flex min-w-0 items-start gap-2">
+                                                    <UserIdentityPresentation
+                                                        surface={identitySurface}
+                                                        layout="stacked"
+                                                        compact
+                                                        identityPresentation={
+                                                            entry.identityPresentation
                                                         }
-                                                    >
-                                                        <span className="truncate">
-                                                            {entry.username}
-                                                        </span>
-                                                    </Link>
+                                                        username={
+                                                            <Link
+                                                                href={getProfileUrl(
+                                                                    entry.userId,
+                                                                    entry.username,
+                                                                )}
+                                                                className="inline-flex min-h-11 min-w-0 items-center truncate font-semibold text-inherit underline-offset-4 hover:underline"
+                                                                onClick={() =>
+                                                                    handleProfileClick(
+                                                                        entry.userId,
+                                                                        entry.username,
+                                                                        entry.rank,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {entry.username}
+                                                            </Link>
+                                                        }
+                                                    />
                                                     <LevelMark level={entry.level} />
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-[var(--platform-ink-muted)]">
@@ -477,25 +504,33 @@ export function LeaderboardView({
                                                         fallbackClassName="text-[10px] font-semibold"
                                                     />
                                                     <div className="min-w-0">
-                                                        <div className="flex min-w-0 items-center gap-1.5">
-                                                            <Link
-                                                                href={getProfileUrl(
-                                                                    entry.userId,
-                                                                    entry.username,
-                                                                )}
-                                                                className="inline-flex min-h-11 min-w-0 items-center truncate font-semibold underline-offset-4 hover:text-[var(--platform-violet)] hover:underline"
-                                                                onClick={() =>
-                                                                    handleProfileClick(
-                                                                        entry.userId,
-                                                                        entry.username,
-                                                                        entry.rank,
-                                                                    )
+                                                        <div className="flex min-w-0 items-start gap-1.5">
+                                                            <UserIdentityPresentation
+                                                                surface={identitySurface}
+                                                                layout="stacked"
+                                                                compact
+                                                                identityPresentation={
+                                                                    entry.identityPresentation
                                                                 }
-                                                            >
-                                                                <span className="truncate">
-                                                                    {entry.username}
-                                                                </span>
-                                                            </Link>
+                                                                username={
+                                                                    <Link
+                                                                        href={getProfileUrl(
+                                                                            entry.userId,
+                                                                            entry.username,
+                                                                        )}
+                                                                        className="inline-flex min-h-11 min-w-0 items-center truncate font-semibold text-inherit underline-offset-4 hover:opacity-80 hover:underline"
+                                                                        onClick={() =>
+                                                                            handleProfileClick(
+                                                                                entry.userId,
+                                                                                entry.username,
+                                                                                entry.rank,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {entry.username}
+                                                                    </Link>
+                                                                }
+                                                            />
                                                             <LevelMark level={entry.level} />
                                                             {entry.country ? (
                                                                 <CountryFlag

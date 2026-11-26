@@ -136,6 +136,7 @@ describe('article API adapter', () => {
             size: 12,
             kind: 'GENERAL',
             authorId: 'user-1',
+            locale: 'fr',
         });
 
         expect(result.page).toEqual({ number: 1, size: 12, totalElements: 13, totalPages: 2 });
@@ -145,6 +146,9 @@ describe('article API adapter', () => {
         expect(requestedUrl).toContain('page=1');
         expect(requestedUrl).toContain('kind=GENERAL');
         expect(requestedUrl).toContain('authorId=user-1');
+        expect(
+            new Headers(fetchPublicApiMock.mock.calls[0]?.[1]?.headers).get('accept-language'),
+        ).toBe('fr');
     });
 
     it('normalizes a null backend username without exposing an unsafe value', async () => {
@@ -307,7 +311,7 @@ describe('article API adapter', () => {
                 }),
             );
 
-        const published = await getPublishedArticle('shared-solution');
+        const published = await getPublishedArticle('shared-solution', 'it');
         const preview = await getPublishedArticle('preview-solution');
 
         expect(published.sharedSubmission?.sourceDownloadUrl).toBe(
@@ -316,6 +320,9 @@ describe('article API adapter', () => {
         expect(preview.sharedSubmission?.sourceDownloadUrl).toBe(
             'https://objects.example.test/private/source.py?signature=kept',
         );
+        expect(
+            new Headers(fetchPublicApiMock.mock.calls[0]?.[1]?.headers).get('accept-language'),
+        ).toBe('it');
     });
 
     it('reads the editable revision submission and explicit consent', async () => {
@@ -645,13 +652,16 @@ describe('article API adapter', () => {
             }),
         );
 
-        const result = await getProblemArticles(289, { page: 0, size: 12 });
+        const result = await getProblemArticles(289, { page: 0, size: 12, locale: 'de' });
 
         expect(result.page.totalElements).toBe(14);
         const requestedUrl = String(fetchPublicApiMock.mock.calls[0]?.[0]);
         expect(requestedUrl).toContain('/problems/289/articles');
         expect(requestedUrl).toContain('page=0');
         expect(requestedUrl).toContain('size=12');
+        expect(
+            new Headers(fetchPublicApiMock.mock.calls[0]?.[1]?.headers).get('accept-language'),
+        ).toBe('de');
     });
 
     it('requests the compact profile portfolio page and preserves its total count', async () => {
@@ -665,12 +675,15 @@ describe('article API adapter', () => {
             }),
         );
 
-        const result = await getProfileArticles('author/one', { size: 3 });
+        const result = await getProfileArticles('author/one', { size: 3, locale: 'es' });
 
         expect(result.page.totalElements).toBe(8);
         const requestedUrl = String(fetchPublicApiMock.mock.calls[0]?.[0]);
         expect(requestedUrl).toContain('/profile/author%2Fone/articles');
         expect(requestedUrl).toContain('size=3');
+        expect(
+            new Headers(fetchPublicApiMock.mock.calls[0]?.[1]?.headers).get('accept-language'),
+        ).toBe('es');
     });
 
     it('reads the backend public error contract', async () => {

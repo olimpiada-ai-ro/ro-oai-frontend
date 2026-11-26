@@ -246,6 +246,11 @@ export function TabbedLeaderboardView({
                         <LeaderboardView
                             leaderboard={initialUserLeaderboard}
                             simple={isCompetition}
+                            identitySurface={
+                                isCompetition
+                                    ? 'RESTRICTED_COMPETITION_LEADERBOARD'
+                                    : 'GLOBAL_LEADERBOARD'
+                            }
                             error={initialUserError}
                             onRetry={() => router.refresh()}
                         />

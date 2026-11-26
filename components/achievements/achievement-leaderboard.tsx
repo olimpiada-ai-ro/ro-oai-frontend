@@ -19,6 +19,7 @@ import type { AchievementLeaderboardEntry } from '@/lib/types';
 import { LevelBadge } from '@/components/level/level-badge';
 import type { LevelTier } from '@/lib/level/types';
 import { PlatformEmptyState, PlatformSectionHeading } from '@/components/platform-page-shell';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 
 type SortBy = 'achievements' | 'xp';
 
@@ -241,20 +242,22 @@ function LeaderboardRow({
 
             {/* Username with Level Badge */}
             <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                    <p
-                        className={cn(
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    <UserIdentityPresentation
+                        username={entry.username}
+                        identityPresentation={entry.identityPresentation}
+                        surface="GLOBAL_LEADERBOARD"
+                        compact
+                        usernameClassName={cn(
                             'truncate font-semibold text-[var(--platform-ink)]',
                             isCurrentUser && 'text-[var(--platform-violet)]',
                         )}
-                    >
-                        {entry.username}
-                        {isCurrentUser && (
-                            <span className="ms-2 text-xs text-[var(--platform-ink-muted)]">
-                                ({tCommon('you')})
-                            </span>
-                        )}
-                    </p>
+                    />
+                    {isCurrentUser ? (
+                        <span className="text-xs text-[var(--platform-ink-muted)]">
+                            ({tCommon('you')})
+                        </span>
+                    ) : null}
                     {entry.level && (
                         <LevelBadge level={entry.level} tier={entry.tier as LevelTier} size="xs" />
                     )}

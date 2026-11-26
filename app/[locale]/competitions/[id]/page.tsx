@@ -49,7 +49,15 @@ export async function generateMetadata({
     const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/competitions/${encodeURIComponent(id)}`;
 
     try {
-        const res = await fetchApi(url);
+        // Keep social metadata on the anonymous representation. Joined users
+        // and admins may see private competitions that must not enter a public URL.
+        const res = await fetch(url, {
+            headers: {
+                accept: 'application/json',
+                'accept-language': locale,
+            },
+            cache: 'no-store',
+        });
 
         if (!res.ok) {
             // Return fallback metadata for error case with noindex
@@ -66,11 +74,7 @@ export async function generateMetadata({
         const competition = (await res.json()) as CompetitionUserResponse;
         const metadata = await generateCompetitionMetadata(
             {
-                id: competition.id,
-                name: competition.name,
-                description: competition.description,
-                startTime: competition.startTime,
-                endTime: competition.endTime,
+                ...competition,
                 problemCount: competition.problems?.length,
             },
             locale,
@@ -100,8 +104,12 @@ export async function generateMetadata({
 
 export default async function CompetitionDetailsPage({ params }: PageProps) {
     const { id } = await params;
-    const t = await getTranslations('competitions.list');
-    const tCommon = await getTranslations('common');
+    const [t, tCommon, locale] = await Promise.all([
+        getTranslations('competitions.list'),
+        getTranslations('common'),
+        getServerLocale(),
+    ]);
+    const localizedHeaders = { 'accept-language': locale };
 
     let competition: CompetitionUserResponse | null = null;
     let leaderboard: {
@@ -115,9 +123,11 @@ export default async function CompetitionDetailsPage({ params }: PageProps) {
         [
             fetchApi(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/competitions/${encodeURIComponent(id)}`,
+                { headers: localizedHeaders },
             ),
             fetchApi(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/competitions/${encodeURIComponent(id)}/leaderboards`,
+                { headers: localizedHeaders },
             ),
             getCompetitionOrganizerDataConsent(id),
         ],
@@ -196,8 +206,6 @@ export default async function CompetitionDetailsPage({ params }: PageProps) {
             : null,
     };
 
-    // Get locale for structured data
-    const locale = await getServerLocale();
     const localePrefix = `/${locale}`;
 
     // Generate structured data for competition page

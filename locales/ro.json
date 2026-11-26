@@ -1166,6 +1166,34 @@
             "starts": "Începe",
             "ends": "Se termină"
         },
+        "hybrid": {
+            "entryCheck": "Verifică cerințele de acces la concurs",
+            "format": "Test teoretic + proiect",
+            "theory": "Test teoretic",
+            "project": "Proiect",
+            "theoryReceived": "Răspunsurile tale finale au fost înregistrate.",
+            "theoryMissing": "Nu ai trimis răspunsuri.",
+            "theoryInstructions": "Alege un singur răspuns la fiecare întrebare. Poți trimite testul o singură dată. După trimitere, răspunsurile sunt definitive.",
+            "points": "{value, plural, one {# punct} few {# puncte} other {# de puncte}}",
+            "evaluationCriteria": "Criterii de evaluare a proiectului",
+            "maximum": "Punctaj maxim: {maximum}.",
+            "submitTheory": "Trimite răspunsurile finale",
+            "submitting": "Se trimite…",
+            "score": "Punctaj: {score} / {maximum}",
+            "projectReceived": "Fișier trimis: {filename}",
+            "projectMissing": "Nu ai trimis niciun proiect.",
+            "fileLabel": "Fișierul proiectului",
+            "fileHelp": "Încarcă proiectul în format ZIP sau PDF (maximum 20 MiB). Poți înlocui fișierul până la încheierea concursului.",
+            "replaceProject": "Înlocuiește fișierul trimis",
+            "uploadProject": "Trimite proiectul",
+            "uploading": "Se încarcă…",
+            "feedback": "Observațiile juriului",
+            "unavailable": "Organizatorii nu au publicat încă testul și tema proiectului.",
+            "denied": "Momentan nu ai acces la aceste materiale.",
+            "failed": "Cererea nu a putut fi finalizată. Actualizează starea trimiterilor și încearcă din nou.",
+            "fileError": "Alege un fișier ZIP sau PDF de maximum 20 MiB, care să nu fie gol.",
+            "conflict": "Starea trimiterii s-a schimbat. Actualizeaz-o înainte de a încerca din nou."
+        },
         "scoring": {
             "visible": "Scoruri finale vizibile",
             "visibleDescription": "Scorurile finale și clasamentele finale sunt vizibile pe tot parcursul acestei competiții."
@@ -1192,6 +1220,7 @@
                 "recoveryDescription": "Dacă întâmpini probleme de conectivitate la internet după terminarea competiției, pur și simplu redeschide aplicația MLCompete Companion. Aceasta va restabili automat accesul normal la internet."
             },
             "tabs": {
+                "hybrid": "Test și proiect",
                 "description": "Descriere",
                 "rules": "Regulament",
                 "problems": "Probleme",
@@ -1210,7 +1239,10 @@
                 "saveSuccess": "Link-ul de înregistrare a fost salvat cu succes",
                 "saveError": "Eroare la salvarea link-ului de înregistrare"
             },
+            "hybridCountdown": "Au mai rămas mai puțin de 10 minute. Verifică dacă ai trimis testul și proiectul.",
             "finishEarly": {
+                "hybridDescription": "Dacă închei concursul acum, se închid testul, încărcarea proiectului și trimiterile la problemele practice. Verifică dacă ai trimis tot ce ai lucrat.",
+                "hybridConfirm": "Închei acum participarea la concurs? Vei putea revedea ce ai trimis după terminarea concursului.",
                 "title": "Finalizează Competiția Mai Devreme",
                 "description": "Dacă ai terminat toate problemele și dorești să închei sesiunea, o poți face aici. Odată ce finalizezi, nu vei mai putea trimite soluții sau vizualiza problemele până la terminarea competiției.",
                 "button": "Finalizează competiția mai devreme",
@@ -1261,6 +1293,53 @@
             "title": "Competiții în prim-plan",
             "subtitle": "Descoperă rundele importante și urmărește calendarul competițional.",
             "viewAll": "Vezi toate competițiile"
+        }
+    },
+    "competitionSeries": {
+        "eyebrow": "Serie de competiții",
+        "metadataDescription": "Urmărește toate etapele și rezultatele din {name}.",
+        "modes": {
+            "multiRound": "Mai multe etape",
+            "divisions": "Divizii"
+        },
+        "tabs": {
+            "overview": "Prezentare",
+            "children": "Etape și divizii",
+            "combined": "Clasament cumulat"
+        },
+        "period": "Intervalul general",
+        "periodHint": "Calculat automat de la prima pornire până la ultima încheiere dintre toate etapele.",
+        "starts": "Începe",
+        "ends": "Se încheie",
+        "events": "{count, plural, one {# etapă} few {# etape} other {# de etape}}",
+        "problems": "{count, plural, one {# problemă} few {# probleme} other {# de probleme}}",
+        "roundLabel": "Etapa {number}",
+        "divisionLabel": "Divizia {number}",
+        "childrenTitle": "Programul competiției",
+        "childrenMultiRoundDescription": "Fiecare etapă își păstrează propria zi și propriul interval orar. Deschide-o pentru înscriere, probleme sau clasament.",
+        "childrenDivisionsDescription": "Alege divizia potrivită. Fiecare divizie are competiția și clasamentul propriu.",
+        "viewCompetition": "Deschide competiția",
+        "viewLeaderboard": "Vezi clasamentul",
+        "openSeries": "Deschide seria de competiții {name}",
+        "combinedTitle": "Clasament cumulat",
+        "combinedDescription": "Totaluri calculate din scorurile vizibile în acest moment în fiecare etapă, cu detalii pe etape și probleme.",
+        "childLeaderboardsTitle": "Clasamentele etapelor",
+        "childLeaderboardsDescription": "O privire rapidă asupra fiecărei etape. Deschide competiția pentru clasamentul complet.",
+        "rank": "Loc",
+        "participant": "Participant",
+        "total": "Total",
+        "roundTotals": "Totaluri pe etape",
+        "problemScores": "Scoruri pe probleme",
+        "noResults": "Nu au fost publicate încă rezultate.",
+        "unavailable": "Clasamentul cumulat nu este încă disponibil.",
+        "errorTitle": "Seria de competiții nu a putut fi încărcată",
+        "errorDescription": "Seria poate fi temporar indisponibilă. Încearcă din nou.",
+        "retry": "Încearcă din nou",
+        "loading": "Se încarcă seria de competiții",
+        "childBanner": {
+            "round": "Etapa {number}",
+            "division": "Divizia {number}",
+            "backToSeries": "Înapoi la {name}"
         }
     },
     "join": {

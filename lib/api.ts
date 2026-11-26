@@ -1,6 +1,6 @@
 import { getSession as getServerAuthSession, handleLogout } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import type { Page, RawSubmission, Submission } from '@/lib/types';
+import type { Locale, Page, RawSubmission, Submission } from '@/lib/types';
 import { detectLocale } from '@/lib/i18n-config';
 import { normalizeCountyRankingsPayload } from '@/lib/county-rankings';
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout';
@@ -2221,10 +2221,12 @@ export async function fetchEditorial(
  */
 export async function fetchEditorialContributions(
     userId: string,
+    locale?: Locale,
 ): Promise<import('./types').EditorialContribution[]> {
     try {
         const response = await fetchApi(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${userId}/editorial-contributions`,
+            { headers: locale ? { 'accept-language': locale } : undefined },
         );
 
         if (!response.ok) {

@@ -42,7 +42,15 @@ export async function generateMetadata({
     }
 
     try {
-        const res = await fetchApi(url);
+        // Social metadata is public and cacheable. Fetch anonymously so a
+        // reviewer/admin session can never publish draft-only fields in an OG URL.
+        const res = await fetch(url, {
+            headers: {
+                accept: 'application/json',
+                'accept-language': locale,
+            },
+            cache: 'no-store',
+        });
 
         if (res.status === 404) {
             return {
@@ -101,7 +109,9 @@ export default async function ProblemPage({
 
     let res: Response;
     try {
-        res = await fetchApi(url);
+        res = await fetchApi(url, {
+            headers: { 'accept-language': locale },
+        });
     } catch (error) {
         console.error('Error loading problem:', error);
         return <ProblemLoadError />;
@@ -128,7 +138,7 @@ export default async function ProblemPage({
 
     const [session, relatedArticles] = await Promise.all([
         getServerSession(authOptions),
-        getProblemArticles(problem.id).catch((error) => {
+        getProblemArticles(problem.id, { locale }).catch((error) => {
             console.error('[Problem] Failed to fetch related articles:', error);
             return {
                 content: [],

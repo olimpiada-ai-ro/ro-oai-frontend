@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { Fragment, useMemo } from 'react';
-import { ArrowUpRight, ShieldCheck, Sparkles, Trophy } from 'lucide-react';
+import { ArrowUpRight, Layers3, ShieldCheck, Sparkles, Trophy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AntiCheatBadge } from '@/components/anti-cheat-badge';
@@ -44,7 +44,9 @@ function CompetitionRow({ competition, indexLabel, nested = false }: Competition
         : tAccessibility('viewDetailsFor', { title: content.name });
     const accessibleLabel = hasLiveFinalScores(competition.competitionType)
         ? `${detailsLabel}. ${t('scoring.visibleDescription')}`
-        : detailsLabel;
+        : competition.competitionType === 'HYBRID'
+          ? `${detailsLabel}. ${t('hybrid.format')}`
+          : detailsLabel;
 
     return (
         <Link
@@ -72,6 +74,12 @@ function CompetitionRow({ competition, indexLabel, nested = false }: Competition
                     />
                     <CompetitionScoringBadge competitionType={competition.competitionType} />
                     <AntiCheatBadge enabled={competition.antiCheatEnabled === true} size="sm" />
+                    {competition.parentSeries ? (
+                        <span className="inline-flex min-h-7 items-center gap-1.5 border border-[var(--platform-line-strong)] bg-[var(--platform-paper)] px-2.5 text-xs font-semibold text-[var(--platform-ink-muted-strong)]">
+                            <Layers3 className="h-3.5 w-3.5" aria-hidden="true" />
+                            {competition.parentSeries.name}
+                        </span>
+                    ) : null}
                     {competition.joined ? (
                         <span className="inline-flex min-h-7 items-center gap-1.5 border border-[var(--platform-line-strong)] bg-[var(--platform-paper)] px-2.5 text-xs font-semibold text-[var(--platform-ink-muted-strong)]">
                             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -145,7 +153,6 @@ export function CompetitionList({ competitions }: { competitions: CompetitionUse
         }
         return map;
     }, [sortedCompetitions]);
-
     if (!sortedCompetitions.length) {
         return (
             <div className="platform-empty-state mt-8">
@@ -160,7 +167,6 @@ export function CompetitionList({ competitions }: { competitions: CompetitionUse
     }
 
     let visibleIndex = 0;
-
     return (
         <div
             className="mt-8 border-t border-[var(--platform-line-strong)]"

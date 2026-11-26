@@ -10,9 +10,11 @@ import { generateMetadata, validateMetadataConfig } from './metadata';
 import {
     SUPPORTED_LOCALES,
     DEFAULT_LOCALE,
+    generateHomeOgImageUrl,
     generateProblemOgImageUrl,
     generateProfileOgImageUrl,
     generateGenericOgImageUrl,
+    generateCountryOgImageUrl,
     generateCompetitionOgImageUrl,
     getFallbackOgImageUrl,
 } from './config';
@@ -20,7 +22,9 @@ import { getMessages } from '@/lib/i18n-server';
 import { getCanonicalUrl } from './canonical';
 import { toProfileSlug } from '@/lib/profile-utils';
 import { getProblemAuthorNames } from '@/lib/problem-authors';
-import type { Locale, ProblemAuthor } from '@/lib/types';
+import { getCountryDisplayName } from '@/lib/country-display';
+import { getUsableAvatarUrl } from '@/lib/user-identity';
+import type { CountryOverview, Locale, ProblemAuthor } from '@/lib/types';
 
 // Import types from main types file
 type Problem = {
@@ -43,6 +47,7 @@ type Problem = {
 
 type UserProfile = {
     username: string;
+    avatar?: string | null;
     firstName: string | null;
     lastName: string | null;
     bio: string | null;
@@ -50,6 +55,15 @@ type UserProfile = {
     problemsSolved: number;
     averageScore: number;
     rank: number;
+    leaderboardPlaced?: boolean;
+    country?: {
+        code: string;
+    };
+    institution?: {
+        country?: {
+            code: string;
+        };
+    };
 };
 
 type Competition = {
@@ -61,10 +75,10 @@ type Competition = {
     participantCount?: number;
     problemCount?: number;
     // Locale-specific fields for dynamic content localization
-    nameEn?: string;
-    nameRo?: string;
-    descriptionEn?: string;
-    descriptionRo?: string;
+    nameEn?: string | null;
+    nameRo?: string | null;
+    descriptionEn?: string | null;
+    descriptionRo?: string | null;
     [key: string]: unknown; // Allow dynamic locale fields like name{Locale}
 };
 
@@ -87,6 +101,10 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string | un
     }
 
     return typeof current === 'string' ? current : undefined;
+}
+
+function getOgDisplayTitle(title: string): string {
+    return title.replace(/\s+(?:-|[|])\s+MLCompete(?:\s+.*)?$/i, '').trim() || title;
 }
 
 /**
@@ -243,10 +261,7 @@ export async function generateHomeMetadata(locale: string): Promise<PageMetadata
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateGenericOgImageUrl(
-                'MLCompete',
-                'Machine Learning Competition Platform',
-            );
+            ogImage = generateHomeOgImageUrl('MLCompete', description);
         } catch (error) {
             console.error('[SEO] Failed to generate OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -331,7 +346,10 @@ export async function generateProblemMetadata(
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateProblemOgImageUrl(problemTitle, problem.difficulty);
+            ogImage = generateProblemOgImageUrl(problemTitle, problem.difficulty, {
+                problemId: problem.id,
+                authorLine: authorText ? `By ${authorText}` : undefined,
+            });
         } catch (error) {
             console.error('[SEO] Failed to generate problem OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -380,7 +398,29 @@ export async function generateProblemMetadata(
 export async function generateProfileMetadata(
     profile: UserProfile,
     locale: string,
+    options?: {
+        countryCode?: string | null;
+    },
 ): Promise<PageMetadata> {
+    const leaderboardPlaced = profile.leaderboardPlaced ?? profile.rank > 0;
+    const countryCode =
+        options?.countryCode || profile.country?.code || profile.institution?.country?.code;
+    const profileOgImage = () =>
+        generateProfileOgImageUrl(
+            profile.username,
+            leaderboardPlaced
+                ? {
+                      rank: profile.rank,
+                      totalScore: profile.totalScore,
+                      problemsSolved: profile.problemsSolved,
+                  }
+                : {},
+            {
+                countryCode,
+                hasAvatar: Boolean(getUsableAvatarUrl(profile.avatar)),
+            },
+        );
+
     try {
         const messages = await getMessages(locale as Locale);
         const profileLabel = getNestedValue(messages, 'profile.title') || 'Profile';
@@ -405,26 +445,24 @@ export async function generateProfileMetadata(
                       ? `Explore ${profile.username}'s public MLCompete profile, machine-learning activity, and competition progress. ${bio}`
                       : bio;
         } else {
-            const stats = `${solvedLabel}: ${numberFormatter.format(profile.problemsSolved)}. ${averageScoreLabel}: ${numberFormatter.format(profile.averageScore)}. ${rankLabel}: #${numberFormatter.format(profile.rank)}.`;
+            const stats = leaderboardPlaced
+                ? ` ${solvedLabel}: ${numberFormatter.format(profile.problemsSolved)}. ${averageScoreLabel}: ${numberFormatter.format(profile.averageScore)}. ${rankLabel}: #${numberFormatter.format(profile.rank)}.`
+                : '';
             description =
                 locale === 'ro'
-                    ? `Descoperă profilul public și progresul în competiții al utilizatorului ${profile.username} pe MLCompete. ${stats}`
+                    ? `Descoperă profilul public și progresul în competiții al utilizatorului ${profile.username} pe MLCompete.${stats}`
                     : locale === 'en'
-                      ? `Explore ${profile.username}'s public MLCompete profile, machine-learning activity, and competition progress. ${stats}`
-                      : `${profileLabel}: ${profile.username}. ${stats}`;
+                      ? `Explore ${profile.username}'s public MLCompete profile, machine-learning activity, and competition progress.${stats}`
+                      : `${profileLabel}: ${profile.username}.${stats}`;
         }
 
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateProfileOgImageUrl(profile.username, {
-                rank: profile.rank,
-                totalScore: profile.totalScore,
-                problemsSolved: profile.problemsSolved,
-            });
+            ogImage = profileOgImage();
         } catch (error) {
             console.error('[SEO] Failed to generate profile OG image URL:', error);
-            ogImage = getFallbackOgImageUrl();
+            ogImage = generateGenericOgImageUrl(profile.username, 'Public profile on MLCompete');
         }
 
         const config: MetadataConfig = {
@@ -448,16 +486,21 @@ export async function generateProfileMetadata(
     } catch (error) {
         console.error('[SEO] Failed to generate profile metadata:', error);
         const profileLabel = locale === 'ro' ? 'Profil' : 'Profile';
-        return generateMetadata(
-            validateMetadataConfig({
-                title: `${profile.username} - ${profileLabel} - MLCompete`,
-                description:
-                    locale === 'ro'
-                        ? `Profilul public al utilizatorului ${profile.username} pe platforma MLCompete.`
-                        : `${profile.username}'s public profile on MLCompete.`,
-                locale,
-            }),
-        );
+        return generateMetadata({
+            title: `${profile.username} - ${profileLabel} - MLCompete`,
+            description:
+                locale === 'ro'
+                    ? `Profilul public al utilizatorului ${profile.username} pe platforma MLCompete.`
+                    : `${profile.username}'s public profile on MLCompete.`,
+            keywords: [profile.username, 'ML profile', 'machine learning'],
+            image: profileOgImage(),
+            type: 'profile',
+            locale,
+            alternateLocales: SUPPORTED_LOCALES.filter(
+                (supportedLocale) => supportedLocale !== locale,
+            ),
+            canonicalUrl: getCanonicalUrl(`/profile/${toProfileSlug(profile.username)}`, locale),
+        });
     }
 }
 
@@ -493,10 +536,9 @@ export async function generateLeaderboardMetadata(locale: string): Promise<PageM
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateGenericOgImageUrl(
-                'Leaderboard',
-                'Top performers in machine learning competitions',
-            );
+            ogImage = generateGenericOgImageUrl(getOgDisplayTitle(title), description, {
+                kind: 'leaderboard',
+            });
         } catch (error) {
             console.error('[SEO] Failed to generate OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -565,10 +607,9 @@ export async function generateProblemsListMetadata(locale: string): Promise<Page
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateGenericOgImageUrl(
-                'Problems',
-                'Explore and solve machine learning challenges',
-            );
+            ogImage = generateGenericOgImageUrl(getOgDisplayTitle(title), description, {
+                kind: 'problems',
+            });
         } catch (error) {
             console.error('[SEO] Failed to generate OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -619,7 +660,9 @@ export async function generateInstitutionsMetadata(locale: string): Promise<Page
         const description =
             messages.institutions?.description || 'Browse and join educational institutions';
 
-        const ogImage = generateGenericOgImageUrl('Institutions', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'institutions',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -650,6 +693,66 @@ export async function generateInstitutionsMetadata(locale: string): Promise<Page
 // ============================================================================
 
 /**
+ * Generate complete metadata for one country page, including a country-specific
+ * social card for both Open Graph and Twitter.
+ */
+export async function generateCountryDetailMetadata(
+    countryCode: string,
+    locale: string,
+    overview?: CountryOverview | null,
+): Promise<PageMetadata> {
+    const normalizedCountryCode = countryCode.trim().toUpperCase();
+    const messages = await getMessages(locale as Locale);
+    const fallbackCountry = {
+        code: normalizedCountryCode,
+        name: normalizedCountryCode,
+        flagEmoji: '',
+    };
+    const countryName = getCountryDisplayName(overview?.country ?? fallbackCountry, locale);
+    const imageCountryName = overview?.country.name || getCountryDisplayName(fallbackCountry, 'en');
+    const hasCountyBreakdown = overview?.hasCountyBreakdown ?? normalizedCountryCode === 'RO';
+    const description =
+        (hasCountyBreakdown
+            ? getNestedValue(messages, 'counties.description')
+            : getNestedValue(messages, 'institutions.description')) ||
+        getNestedValue(messages, 'countries.description') ||
+        `Explore educational institutions and competitors from ${countryName} on MLCompete.`;
+
+    const metadata = generateMetadata({
+        title: `${countryName} - MLCompete`,
+        description,
+        keywords: [
+            countryName,
+            normalizedCountryCode,
+            'educational institutions',
+            'machine learning community',
+            'MLCompete',
+        ],
+        image: generateCountryOgImageUrl(imageCountryName, normalizedCountryCode),
+        type: 'website',
+        locale,
+        alternateLocales: SUPPORTED_LOCALES.filter((supportedLocale) => supportedLocale !== locale),
+        canonicalUrl: getCanonicalUrl(`/countries/${normalizedCountryCode}`, locale),
+    });
+
+    // Country directory descriptions are intentionally concise UI copy. Keep
+    // that localized text instead of replacing it with the generic platform
+    // fallback used by the global SEO length heuristic.
+    return {
+        ...metadata,
+        description,
+        openGraph: {
+            ...metadata.openGraph,
+            description,
+        },
+        twitter: {
+            ...metadata.twitter,
+            description,
+        },
+    };
+}
+
+/**
  * Generate metadata for the country directory page.
  */
 export async function generateCountriesMetadata(locale: string): Promise<PageMetadata> {
@@ -662,7 +765,9 @@ export async function generateCountriesMetadata(locale: string): Promise<PageMet
             getNestedValue(messages, 'institutions.description') ||
             'Explore countries represented on MLCompete, discover their educational institutions, and browse Romania by county on the platform.';
 
-        const ogImage = generateGenericOgImageUrl('Countries', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'countries',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -709,7 +814,10 @@ export async function generateCountiesMetadata(locale: string): Promise<PageMeta
         const description =
             messages.counties?.description || 'Browse Romanian counties and their statistics';
 
-        const ogImage = generateGenericOgImageUrl('Counties', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'countries',
+            countryCode: 'RO',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -751,7 +859,9 @@ export async function generateInstitutionRankingsMetadata(locale: string): Promi
             messages.rankings?.institutionRankingsDescription ||
             'View institutions ranked by member count';
 
-        const ogImage = generateGenericOgImageUrl('Institution Rankings', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'leaderboard',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -788,7 +898,10 @@ export async function generateCountyRankingsMetadata(locale: string): Promise<Pa
         const description =
             messages.rankings?.countyRankingsDescription || 'View counties ranked by user count';
 
-        const ogImage = generateGenericOgImageUrl('County Rankings', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'leaderboard',
+            countryCode: 'RO',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -830,7 +943,7 @@ export async function generateMyRequestsMetadata(locale: string): Promise<PageMe
             messages.myRequests?.description ||
             'View and manage your institution membership requests';
 
-        const ogImage = generateGenericOgImageUrl('My Requests', description);
+        const ogImage = getFallbackOgImageUrl();
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -841,6 +954,8 @@ export async function generateMyRequestsMetadata(locale: string): Promise<PageMe
             locale,
             alternateLocales: SUPPORTED_LOCALES.filter((l) => l !== locale),
             canonicalUrl: getCanonicalUrl('/my-requests', locale),
+            noindex: true,
+            nofollow: true,
         };
 
         return generateMetadata(config);
@@ -872,7 +987,9 @@ export async function generateRoadmapMetadata(locale: string): Promise<PageMetad
             messages.roadmap?.description ||
             'What we are building next and our vision for the platform';
 
-        const ogImage = generateGenericOgImageUrl('Roadmap', description);
+        const ogImage = generateGenericOgImageUrl(title, description, {
+            kind: 'roadmap',
+        });
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -913,7 +1030,7 @@ export async function generateMyQuestionsMetadata(locale: string): Promise<PageM
         const description =
             messages.myQuestions?.description || 'View and manage your questions about problems';
 
-        const ogImage = generateGenericOgImageUrl('My Questions', description);
+        const ogImage = getFallbackOgImageUrl();
 
         const config: MetadataConfig = {
             title: `${title} - MLCompete`,
@@ -924,6 +1041,8 @@ export async function generateMyQuestionsMetadata(locale: string): Promise<PageM
             locale,
             alternateLocales: SUPPORTED_LOCALES.filter((l) => l !== locale),
             canonicalUrl: getCanonicalUrl('/my-questions', locale),
+            noindex: true,
+            nofollow: true,
         };
 
         return generateMetadata(config);
@@ -971,10 +1090,9 @@ export async function generateCompetitionsListMetadata(locale: string): Promise<
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateGenericOgImageUrl(
-                'Competitions',
-                'Machine learning competitions and challenges',
-            );
+            ogImage = generateGenericOgImageUrl(getOgDisplayTitle(title), description, {
+                kind: 'competitions',
+            });
         } catch (error) {
             console.error('[SEO] Failed to generate OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -1042,7 +1160,9 @@ export async function generateAchievementsMetadata(locale: string): Promise<Page
         // Generate dynamic OG image with fallback
         let ogImage: string;
         try {
-            ogImage = generateGenericOgImageUrl('Achievements', 'Unlock achievements and earn XP');
+            ogImage = generateGenericOgImageUrl(getOgDisplayTitle(title), description, {
+                kind: 'achievements',
+            });
         } catch (error) {
             console.error('[SEO] Failed to generate OG image URL:', error);
             ogImage = getFallbackOgImageUrl();
@@ -1187,7 +1307,7 @@ export async function generatePrivacyMetadata(locale: string): Promise<PageMetad
             title: `${title} - MLCompete`,
             description,
             keywords: ['privacy policy', 'data protection', 'GDPR', 'personal data', 'MLCompete'],
-            image: getFallbackOgImageUrl(),
+            image: generateGenericOgImageUrl(title, description, { kind: 'legal' }),
             type: 'website',
             locale,
             alternateLocales: SUPPORTED_LOCALES.filter((l) => l !== locale),
@@ -1237,7 +1357,7 @@ export async function generateTermsMetadata(locale: string): Promise<PageMetadat
                 'legal',
                 'MLCompete',
             ],
-            image: getFallbackOgImageUrl(),
+            image: generateGenericOgImageUrl(title, description, { kind: 'legal' }),
             type: 'website',
             locale,
             alternateLocales: SUPPORTED_LOCALES.filter((l) => l !== locale),

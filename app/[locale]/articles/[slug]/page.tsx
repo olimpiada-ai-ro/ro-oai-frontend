@@ -19,10 +19,11 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { slug } = await params;
+    const { locale: localeParam, slug } = await params;
+    const locale = localeParam as Locale;
 
     try {
-        const article = await getPublishedArticle(slug);
+        const article = await getPublishedArticle(slug, locale);
         const seoT = await getTranslations({ locale: article.language, namespace: 'articles' });
         return generateCommunityArticleMetadata(article, {
             authorFallback: seoT('authorFallback'),
@@ -42,7 +43,7 @@ export default async function ArticlePage({ params }: Props) {
 
     let article;
     try {
-        article = await getPublishedArticle(slug);
+        article = await getPublishedArticle(slug, locale);
     } catch (error) {
         if (error instanceof ArticleApiError && error.status === 404) notFound();
         throw error;

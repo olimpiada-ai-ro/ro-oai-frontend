@@ -56,6 +56,12 @@ describe('profile avatar structured data', () => {
         expect(schema.image).toBe(`${BASE_URL}/avatars/user-1.webp`);
     });
 
+    it('bounds legacy biographies in Person structured data', () => {
+        const schema = generatePersonSchema(profile({ bio: 'a'.repeat(50_000) }), 'en');
+
+        expect(schema.description).toHaveLength(500);
+    });
+
     it('does not advertise a generic image for leaderboard entries without photos', () => {
         const entries: GenericLeaderboardEntry[] = [
             {

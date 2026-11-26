@@ -122,6 +122,12 @@ function getContentSecurityPolicy() {
         process.env.NEXT_PUBLIC_ARTICLE_MEDIA_FRAME_ORIGINS,
     );
 
+    const storageUrl = getHttpUrl(process.env.UPLOAD_STORAGE_ORIGIN, LOCAL_API_URL);
+    const storageOrigin =
+        storageUrl.protocol === 'https:' && !storageUrl.hostname.includes('*')
+            ? storageUrl.origin
+            : '';
+
     const cspDirectives = [
         // Default source
         "default-src 'self'",
@@ -142,7 +148,7 @@ function getContentSecurityPolicy() {
 
         // Connect sources - allow API calls and analytics
         // Companion app communication now goes through backend WebSocket (no localhost needed)
-        `connect-src 'self' ${apiUrl.origin} ${wsUrl} https://accounts.google.com https://www.googleapis.com https://raw.githubusercontent.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com`,
+        `connect-src 'self' ${apiUrl.origin} ${wsUrl} https://accounts.google.com https://www.googleapis.com https://raw.githubusercontent.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com ${storageOrigin}`.trim(),
 
         // Frame sources - allow Google Tag Manager and explicitly configured media origins.
         `frame-src 'self' https://accounts.google.com https://www.googletagmanager.com ${articleMediaFrameOrigins.join(' ')}`.trim(),

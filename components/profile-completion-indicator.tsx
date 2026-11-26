@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useCompetitionData } from '@/components/competition-data-provider';
 import { fetchApi } from '@/lib/api';
+import { limitProfileBio } from '@/lib/profile-bio';
 
 interface ProfileCompletionIndicatorProps {
     /**
@@ -95,7 +96,7 @@ export function ProfileCompletionIndicator({
                     email: settingsData.email || null,
                     joinedAt: new Date(settingsData.joinDate || settingsData.joinedAt),
                     avatar: settingsData.avatar || '',
-                    bio: settingsData.bio || null,
+                    bio: limitProfileBio(settingsData.bio),
                     location: settingsData.location || null,
                     website: settingsData.website || null,
                     github: settingsData.github || null,

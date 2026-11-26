@@ -4,38 +4,38 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { CountryDetailView } from '@/components/country-detail-view';
 import { PlatformPageShell } from '@/components/platform-page-shell';
 import { getCountryOverview } from '@/lib/api';
-import { getCountryDisplayName } from '@/lib/country-display';
-import { getMessages, getServerLocale } from '@/lib/i18n-server';
+import { generateCountryDetailMetadata } from '@/lib/seo/page-metadata';
 
 type CountryDetailPageProps = {
     params: Promise<{ code: string; locale: string }>;
 };
 
 export async function generateMetadata({ params }: CountryDetailPageProps): Promise<Metadata> {
-    const [{ code, locale }, messages] = await Promise.all([
-        params,
-        getServerLocale().then(getMessages),
-    ]);
+    const { code, locale } = await params;
     const countryCode = code.trim().toUpperCase();
-    const fallbackTitle = messages.countries?.title || 'Countries';
 
     try {
         const overview = await getCountryOverview(countryCode);
-        const countryName = getCountryDisplayName(overview.country, locale);
-        return {
-            title: `${countryName} - MLCompete`,
-            description: overview.hasCountyBreakdown
-                ? messages.counties?.description
-                : messages.institutions?.description,
-            alternates: { canonical: `/${locale}/countries/${overview.country.code}` },
-        };
+        const metadata = await generateCountryDetailMetadata(countryCode, locale, overview);
+        return toNextMetadata(metadata);
     } catch {
-        return {
-            title: `${fallbackTitle} - MLCompete`,
-            description: messages.institutions?.description,
-            alternates: { canonical: `/${locale}/countries/${countryCode}` },
-        };
+        const metadata = await generateCountryDetailMetadata(countryCode, locale);
+        return toNextMetadata(metadata);
     }
+}
+
+function toNextMetadata(
+    metadata: Awaited<ReturnType<typeof generateCountryDetailMetadata>>,
+): Metadata {
+    return {
+        title: metadata.title,
+        description: metadata.description,
+        keywords: metadata.keywords,
+        openGraph: metadata.openGraph,
+        twitter: metadata.twitter,
+        alternates: metadata.alternates,
+        robots: metadata.robots,
+    };
 }
 
 export default async function CountryDetailPage({ params }: CountryDetailPageProps) {

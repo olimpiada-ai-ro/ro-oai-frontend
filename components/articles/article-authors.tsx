@@ -1,6 +1,7 @@
 import { BadgeCheck, UserRound } from 'lucide-react';
 
 import { UserAvatar } from '@/components/user-avatar';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 import { Link } from '@/i18n/routing';
 import { getArticleAuthorName, type ArticleAuthor } from '@/lib/articles';
 import { getProfileUrl } from '@/lib/profile-utils';
@@ -35,8 +36,21 @@ export function ArticleAuthors({
             >
                 <UserRound className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span className="shrink-0">{label}</span>
-                <span className="truncate font-semibold text-[var(--platform-ink)]">
-                    {authors.map((author) => getArticleAuthorName(author, fallbackName)).join(', ')}
+                <span className="inline-flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 font-semibold text-[var(--platform-ink)]">
+                    {authors.map((author, index) => (
+                        <span
+                            key={author.userId}
+                            className="inline-flex min-w-0 items-center gap-1.5"
+                        >
+                            {index > 0 ? <span aria-hidden="true">,</span> : null}
+                            <UserIdentityPresentation
+                                surface="AUTHOR"
+                                compact
+                                identityPresentation={author.identityPresentation}
+                                username={getArticleAuthorName(author, fallbackName)}
+                            />
+                        </span>
+                    ))}
                 </span>
             </p>
         );
@@ -67,9 +81,14 @@ export function ArticleAuthors({
                                     loading="lazy"
                                 />
                                 <span className="flex min-w-0 flex-col items-start py-1">
-                                    <span className="group-hover:text-[var(--platform-violet-strong)] dark:group-hover:text-[var(--platform-violet)]">
-                                        {name}
-                                    </span>
+                                    <UserIdentityPresentation
+                                        surface="AUTHOR"
+                                        layout="stacked"
+                                        compact
+                                        identityPresentation={author.identityPresentation}
+                                        username={name}
+                                        usernameClassName="group-hover:opacity-80"
+                                    />
                                     {author.isProblemAuthor && problemAuthorLabel ? (
                                         <span className="mt-0.5 inline-flex items-center gap-1 bg-[var(--platform-citron)] px-1.5 py-0.5 text-[0.68rem] font-bold leading-4 text-[var(--platform-on-accent)]">
                                             <BadgeCheck

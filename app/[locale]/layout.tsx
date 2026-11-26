@@ -35,6 +35,7 @@ import { AppearanceProvider } from '@/components/providers/appearance-provider';
 import { createAppearanceBootstrapScript } from '@/lib/appearance';
 import { getServerAppearancePreferences } from '@/lib/appearance-server';
 import { notFound } from 'next/navigation';
+import { OG_IMAGE_DIMENSIONS, SITE_CONFIG } from '@/lib/seo/config';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -68,6 +69,26 @@ export const metadata: Metadata = {
         icon: '/favicon.ico',
         shortcut: '/favicon.ico',
         apple: '/logo.png',
+    },
+    openGraph: {
+        type: 'website',
+        siteName: SITE_CONFIG.name,
+        title: 'MLCompete - Machine Learning Competition Platform',
+        description: 'Evaluate your machine learning models and compete with others.',
+        images: [
+            {
+                url: SITE_CONFIG.ogImage,
+                width: OG_IMAGE_DIMENSIONS.width,
+                height: OG_IMAGE_DIMENSIONS.height,
+                alt: 'MLCompete - Machine Learning Competition Platform',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'MLCompete - Machine Learning Competition Platform',
+        description: 'Evaluate your machine learning models and compete with others.',
+        images: [SITE_CONFIG.ogImage],
     },
 };
 

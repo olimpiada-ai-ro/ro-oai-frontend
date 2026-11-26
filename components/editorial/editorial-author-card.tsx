@@ -2,6 +2,7 @@
 
 import { Link } from '@/i18n/routing';
 import { UserAvatar } from '@/components/user-avatar';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CodeIcon, TrophyIcon } from 'lucide-react';
@@ -48,10 +49,16 @@ export function EditorialAuthorCard({ author, onViewSource }: EditorialAuthorCar
                 <div className="flex flex-wrap items-center gap-2">
                     <Link
                         href={profileUrl}
-                        className="inline-flex min-h-11 min-w-0 items-center truncate font-semibold text-[var(--platform-violet-strong)] underline decoration-[var(--platform-coral)] decoration-2 underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--platform-coral)] dark:text-[var(--platform-violet)]"
+                        className="group inline-flex min-h-11 min-w-0 max-w-full items-center font-semibold text-inherit focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--platform-coral)]"
                         data-testid="author-profile-link"
                     >
-                        {author.username}
+                        <UserIdentityPresentation
+                            surface="AUTHOR"
+                            compact
+                            identityPresentation={author.identityPresentation}
+                            username={author.username}
+                            usernameClassName="underline decoration-[var(--platform-coral)] decoration-2 underline-offset-4 group-hover:no-underline"
+                        />
                     </Link>
 
                     {/* Rank badge - only shown when author has a competition rank */}

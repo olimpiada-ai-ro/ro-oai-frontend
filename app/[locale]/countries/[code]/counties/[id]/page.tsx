@@ -5,6 +5,13 @@ import { CountyDetailView } from '@/components/county-detail-view';
 import { PlatformPageShell } from '@/components/platform-page-shell';
 import { getCountryCountyById } from '@/lib/api';
 import { getMessages, getServerLocale } from '@/lib/i18n-server';
+import { getCanonicalUrl } from '@/lib/seo/canonical';
+import {
+    generateCountyOgImageUrl,
+    getFallbackOgImageUrl,
+    SUPPORTED_LOCALES,
+} from '@/lib/seo/config';
+import { generateMetadata as generateSeoMetadata } from '@/lib/seo/metadata';
 
 type CountryCountyDetailPageProps = {
     params: Promise<{ code: string; id: string; locale: string }>;
@@ -20,31 +27,48 @@ export async function generateMetadata({
     const countyId = Number(id);
     const countryCode = code.toUpperCase();
     const fallbackTitle = messages.counties?.title || 'Counties';
-    const canonical = `/${locale}/countries/${countryCode}/counties/${id}`;
 
     if (countryCode !== 'RO' || !Number.isInteger(countyId) || countyId <= 0) {
-        return {
+        return generateSeoMetadata({
             title: `${fallbackTitle} - MLCompete`,
-            description: messages.counties?.description,
-            alternates: { canonical },
-        };
+            description:
+                messages.counties?.description || 'Browse Romanian counties and institutions.',
+            image: getFallbackOgImageUrl(),
+            type: 'website',
+            locale,
+            alternateLocales: SUPPORTED_LOCALES.filter((candidate) => candidate !== locale),
+            canonicalUrl: getCanonicalUrl(`/countries/${countryCode}/counties/${id}`, locale),
+            noindex: true,
+            nofollow: true,
+        });
     }
 
     try {
         const county = await getCountryCountyById('RO', countyId);
-        return {
+        const description = `${messages.counties?.detailDescription || fallbackTitle}: ${county.name} (${county.code}).`;
+
+        return generateSeoMetadata({
             title: `${county.name} - MLCompete`,
-            description: `${messages.counties?.detailDescription || fallbackTitle}: ${county.name} (${county.code}).`,
-            alternates: {
-                canonical: `/${locale}/countries/RO/counties/${countyId}`,
-            },
-        };
+            description,
+            keywords: [county.name, county.code, 'Romania', 'institutions', 'MLCompete'],
+            image: generateCountyOgImageUrl(county.name, county.code),
+            type: 'website',
+            locale,
+            alternateLocales: SUPPORTED_LOCALES.filter((candidate) => candidate !== locale),
+            canonicalUrl: getCanonicalUrl(`/countries/RO/counties/${countyId}`, locale),
+        });
     } catch {
-        return {
+        return generateSeoMetadata({
             title: `${fallbackTitle} - MLCompete`,
-            description: messages.counties?.description,
-            alternates: { canonical },
-        };
+            description:
+                messages.counties?.description || 'Browse Romanian counties and institutions.',
+            image: getFallbackOgImageUrl(),
+            type: 'website',
+            locale,
+            alternateLocales: SUPPORTED_LOCALES.filter((candidate) => candidate !== locale),
+            canonicalUrl: getCanonicalUrl(`/countries/RO/counties/${countyId}`, locale),
+            noindex: true,
+        });
     }
 }
 

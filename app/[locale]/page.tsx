@@ -14,7 +14,7 @@ import {
     generateWebSiteSchema,
 } from '@/lib/seo/structured-data';
 import { StructuredData } from '@/components/structured-data';
-import { BASE_URL, ORGANIZATION_CONFIG } from '@/lib/seo/config';
+import { BASE_URL, ORGANIZATION_CONFIG, generateHomeOgImageUrl } from '@/lib/seo/config';
 import { getPublishedArticles } from '@/lib/articles';
 
 type Props = {
@@ -86,7 +86,7 @@ async function HomePageFeed({ locale }: { locale: Locale }) {
             loadPage<HomepageProblem>(problemsUrl, 'problems'),
             loadPage<CompetitionUserListResponse>(competitionsUrl, 'competitions'),
             getCurrentCompetitionState(),
-            getPublishedArticles({ page: 0, size: 3 })
+            getPublishedArticles({ page: 0, size: 3, locale })
                 .then((data) => ({ data, unavailable: false }))
                 .catch((error) => {
                     console.error('Error loading articles on the homepage:', error);
@@ -123,18 +123,15 @@ export default async function Home({ params }: Props) {
 
     const organizationSchema = generateOrganizationSchema(locale);
     const websiteSchema = generateWebSiteSchema(locale);
-    const imageObjectSchema = generateImageObjectSchema(
-        `${BASE_URL}/api/og?type=generic&title=MLCompete`,
-        {
-            license: 'https://creativecommons.org/licenses/by-nc/4.0/',
-            acquireLicensePage: `${BASE_URL}/terms`,
-            creditText: ORGANIZATION_CONFIG.name,
-            creator: ORGANIZATION_CONFIG.name,
-            copyrightNotice: `© ${new Date().getFullYear()} ${ORGANIZATION_CONFIG.name}`,
-            width: 1200,
-            height: 630,
-        },
-    );
+    const imageObjectSchema = generateImageObjectSchema(generateHomeOgImageUrl(), {
+        license: 'https://creativecommons.org/licenses/by-nc/4.0/',
+        acquireLicensePage: `${BASE_URL}/terms`,
+        creditText: ORGANIZATION_CONFIG.name,
+        creator: ORGANIZATION_CONFIG.name,
+        copyrightNotice: `© ${new Date().getFullYear()} ${ORGANIZATION_CONFIG.name}`,
+        width: 1200,
+        height: 630,
+    });
 
     return (
         <>

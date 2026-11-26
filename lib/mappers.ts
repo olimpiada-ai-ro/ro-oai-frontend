@@ -11,5 +11,6 @@ export function mapSimpleLeaderboardEntry(e: SimpleLeaderboardEntry): GenericLea
         metric: e.metric,
         attainedAt: e.attainedAt,
         awardRank: e.awardRank,
+        identityPresentation: e.identityPresentation,
     };
 }

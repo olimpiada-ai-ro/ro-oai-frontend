@@ -5,6 +5,7 @@ import { getProblemAuthors } from '@/lib/problem-authors';
 import { getProfileUrl } from '@/lib/profile-utils';
 import type { Problem } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { UserIdentityPresentation } from '@/components/user-identity-presentation';
 
 export function ProblemAuthors({
     problem,
@@ -25,16 +26,23 @@ export function ProblemAuthors({
                 {authors.map((author, index) => (
                     <Fragment key={`${author.userId ?? author.displayName}-${index}`}>
                         {index > 0 ? <span>,</span> : null}
-                        {author.userId ? (
-                            <Link
-                                href={getProfileUrl(author.userId, author.username)}
-                                className="font-bold text-[var(--platform-violet-strong)] underline decoration-[var(--platform-coral)] decoration-2 underline-offset-4 hover:text-[var(--platform-violet)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--platform-coral)] dark:text-[var(--platform-violet)]"
-                            >
-                                {author.displayName}
-                            </Link>
-                        ) : (
-                            <span>{author.displayName}</span>
-                        )}
+                        <UserIdentityPresentation
+                            surface="AUTHOR"
+                            compact
+                            identityPresentation={author.identityPresentation}
+                            username={
+                                author.userId ? (
+                                    <Link
+                                        href={getProfileUrl(author.userId, author.username)}
+                                        className="font-bold text-inherit underline decoration-[var(--platform-coral)] decoration-2 underline-offset-4 hover:opacity-80 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--platform-coral)]"
+                                    >
+                                        {author.displayName}
+                                    </Link>
+                                ) : (
+                                    <span>{author.displayName}</span>
+                                )
+                            }
+                        />
                     </Fragment>
                 ))}
             </strong>

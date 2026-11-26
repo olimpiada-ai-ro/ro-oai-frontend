@@ -41,7 +41,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const canonicalPage = filtered ? 1 : page;
     const pageQuery = canonicalPage > 1 ? `?page=${canonicalPage}` : '';
     const canonical = `${BASE_URL}/${locale}/articles${pageQuery}`;
-    const image = generateGenericOgImageUrl(t('metaTitle'), t('metaDescription'));
+    const image = generateGenericOgImageUrl(t('metaTitle'), t('metaDescription'), {
+        kind: 'articles',
+    });
     const languages = Object.fromEntries([
         ...SUPPORTED_LOCALES.map((candidate) => [
             candidate,
@@ -115,6 +117,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
     const articles = await getPublishedArticles({
         page: requestedPage - 1,
         size: 12,
+        locale,
         ...filters,
     });
 

@@ -8,6 +8,7 @@ type CompetitionWarningDisplayProps = {
     // When the countdown should end. Accepts a Date, timestamp (ms), or ISO string.
     endTime: Date | number | string;
     storageKey: string;
+    hybrid?: boolean;
 };
 
 function parseEndTime(endTime: Date | number | string): number {
@@ -18,7 +19,11 @@ function parseEndTime(endTime: Date | number | string): number {
     return dt.getTime();
 }
 
-export function CompetitionWarningDisplay({ endTime, storageKey }: CompetitionWarningDisplayProps) {
+export function CompetitionWarningDisplay({
+    endTime,
+    storageKey,
+    hybrid,
+}: CompetitionWarningDisplayProps) {
     const t = useTranslations('competitions.details');
     const target = useMemo(() => parseEndTime(endTime), [endTime]);
 
@@ -42,7 +47,7 @@ export function CompetitionWarningDisplay({ endTime, storageKey }: CompetitionWa
 
     return (
         <DismissibleAlert
-            message={t('countdownAlert')}
+            message={t(hybrid ? 'hybridCountdown' : 'countdownAlert')}
             storageKey={storageKey}
             onDismiss={() => setDismissed('true')}
             onLoad={(saved) => {
